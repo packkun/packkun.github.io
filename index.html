@@ -44,33 +44,62 @@ a{color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 svg{display:block}
 
-/* ---------- замок ---------- */
-.lock{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:32px 16px;overflow:auto;
-  background:radial-gradient(110% 80% at 50% 18%,#2B5145 0%,#1E3A31 55%,#162C25 100%);color:#DCE6DF;transform-origin:0 50%}
-.door{width:min(340px,100%);display:flex;flex-direction:column;align-items:center;text-align:center}
-.dial{width:200px;height:200px;margin:0 0 20px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35));user-select:none;-webkit-user-select:none;pointer-events:none}
-.dial .face{transform-box:fill-box;transform-origin:center;transition:transform .35s cubic-bezier(.3,1.45,.5,1)}
-.dial.shake{animation:shake .45s ease}
-@keyframes shake{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
-.lock-title{margin:0;font-size:42px;line-height:1.05;font-weight:600;font-stretch:87.5%;letter-spacing:.02em;color:var(--plate)}
-.lock-sub{margin:10px 0 22px;color:#B9CCC2;max-width:32ch}
+/* ---------- вход ---------- */
+.lock{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:40px 20px;overflow:auto;background:#0C1915;color:#EEF3F0;isolation:isolate;font-family:"Segoe UI Variable Display","Segoe UI",Roboto,system-ui,-apple-system,sans-serif}
+.aurora{position:fixed;inset:-25%;z-index:-2;filter:blur(64px);pointer-events:none}
+.aurora i{position:absolute;border-radius:50%;animation:drift 20s ease-in-out infinite alternate}
+.aurora i:nth-child(1){width:58vmax;height:58vmax;left:6%;top:4%;background:radial-gradient(circle,rgba(40,140,108,1),transparent 66%)}
+.aurora i:nth-child(2){width:44vmax;height:44vmax;right:6%;top:26%;background:radial-gradient(circle,rgba(222,174,84,.8),transparent 64%);animation-duration:17s;animation-delay:-6s}
+.aurora i:nth-child(3){width:52vmax;height:52vmax;left:26%;bottom:-6%;background:radial-gradient(circle,rgba(40,138,150,.9),transparent 64%);animation-duration:21s;animation-delay:-11s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}33%{transform:translate(9vmax,-6vmax) scale(1.16)}66%{transform:translate(-4vmax,7vmax) scale(.92)}100%{transform:translate(-8vmax,-3vmax) scale(1.08)}}
+.lock::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(80% 65% at 50% 45%,rgba(12,25,21,.35),rgba(8,17,14,.5));pointer-events:none}
+html:has(body.opening){overflow:hidden}
+.door{width:min(360px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}}
+.door.shake{animation:shake .42s ease}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.mark{position:relative;width:72px;height:72px;margin-bottom:24px;border-radius:50%;display:grid;place-items:center;color:#F2D58F;
+  background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 14px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.25);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  transition:transform .35s cubic-bezier(.3,1.4,.5,1),background .35s,color .35s}
+.mark svg{width:30px;height:30px}
+.mark::before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(242,213,143,.45);opacity:0;transform:scale(.9);transition:opacity .35s,transform .35s}
+.lock.focus .mark::before{opacity:1;transform:none}
+.mark::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid transparent;border-top-color:#F2D58F;border-right-color:rgba(242,213,143,.35);opacity:0;transition:opacity .2s}
+.lock.busy .mark::after{opacity:1;animation:spin .9s linear infinite}
+.lock.busy .mark::before{opacity:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mark.tick{animation:tick .22s ease}
+@keyframes tick{50%{transform:scale(1.07)}}
+.mark.done{background:linear-gradient(145deg,#F6DE9E,#C9A04C);color:#1C1406;transform:scale(1.08);border-color:transparent}
+.lock-title{margin:0;font-size:30px;line-height:1.15;font-weight:650;letter-spacing:-.015em;color:#F6F8F7}
+.lock-sub{margin:8px 0 26px;font-size:15px;line-height:1.5;color:rgba(238,243,240,.66);max-width:32ch}
 .lock-form{width:100%;display:grid;gap:10px}
-.lock-form input{width:100%;padding:12px 14px;border-radius:7px;border:1px solid rgba(234,217,177,.32);background:rgba(4,14,11,.32);color:#F2EAD6;font-size:16px}
-.lock-form input::placeholder{color:#8FA79B}
-.lock-form input:focus{outline:none;border-color:var(--plate);box-shadow:0 0 0 3px rgba(234,217,177,.18)}
-.lock-hint{margin:0;min-height:1.5em;font-size:14px;color:#F0B9A9}
-.lock-hint.ok{color:#B9CCC2}
-.lock-btn{padding:12px 16px;border:0;border-radius:7px;background:linear-gradient(#D6B064,#B4893A);color:#1C1406;font-weight:600;font-size:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 0 #7A5A1F}
-.lock-btn:hover{filter:brightness(1.06)}
-.lock-btn:disabled{filter:saturate(.4);cursor:progress}
-.lock-foot{margin:20px 0 0;font-size:13.5px;color:#93AC9F;max-width:34ch}
-.lock-link{margin-top:8px;border:0;background:none;color:#B9CCC2;text-decoration:underline;text-underline-offset:3px;font-size:13.5px;padding:4px}
-.lock-link:hover{color:var(--plate)}
-.lock-file{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:7px;border:1px dashed rgba(234,217,177,.32);color:#B9CCC2;font-size:14px;text-align:left}
-.lock-file button{flex:none;border:1px solid rgba(234,217,177,.4);border-radius:6px;background:rgba(234,217,177,.08);color:var(--plate);padding:5px 10px;font-size:13.5px}
-.lock.opening .face{transition:transform .9s cubic-bezier(.2,.75,.25,1)}
-.lock.opening{animation:door .75s .62s cubic-bezier(.55,0,.75,.2) forwards;box-shadow:30px 0 60px rgba(0,0,0,.45)}
-@keyframes door{to{transform:perspective(1800px) rotateY(-96deg);opacity:.15}}
+.inp{position:relative}
+.inp input{width:100%;height:52px;padding:0 50px 0 16px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#F6F8F7;font:inherit;font-size:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:border-color .2s,background .2s,box-shadow .2s}
+.inp input:not([type="password"]):not(#tok){padding-right:16px}
+.inp input::placeholder{color:rgba(238,243,240,.42)}
+.inp input:focus{outline:none;border-color:rgba(242,213,143,.65);background:rgba(255,255,255,.1);box-shadow:0 0 0 4px rgba(242,213,143,.13)}
+.inp .eye{position:absolute;right:6px;top:6px;width:40px;height:40px;border:0;border-radius:10px;background:none;color:rgba(238,243,240,.5);display:grid;place-items:center}
+.inp .eye:hover{color:#F6F8F7;background:rgba(255,255,255,.07)}
+.inp .eye svg{width:19px;height:19px}
+.go{height:52px;margin-top:4px;border:0;border-radius:14px;background:linear-gradient(135deg,#F4DA97,#C9A04C);color:#1C1406;font:inherit;font-size:16px;font-weight:650;box-shadow:0 10px 26px rgba(201,160,76,.3);transition:transform .15s,box-shadow .2s,filter .2s}
+.go:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(201,160,76,.4)}
+.go:active{transform:translateY(1px)}
+.go:disabled{filter:saturate(.55) brightness(.92);cursor:progress;transform:none}
+.lock-hint{margin:0;min-height:1.45em;font-size:14px;line-height:1.45;color:#FFB3A2}
+.lock-hint:empty{min-height:0}
+.lock-hint.ok{color:rgba(238,243,240,.72)}
+.lock-foot{margin:24px 0 0;font-size:13px;line-height:1.55;color:rgba(238,243,240,.5);max-width:34ch}
+.lock-link{border:0;background:none;padding:2px;color:rgba(242,213,143,.85);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lock-link:hover{color:#F6DE9E}
+.repo-line{margin:0 0 2px;font-size:13.5px;color:rgba(238,243,240,.6)}
+.file-pick{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:6px 6px 6px 16px;border-radius:14px;border:1px dashed rgba(255,255,255,.22);color:rgba(238,243,240,.72);font-size:14px;text-align:left}
+.file-pick span{overflow:hidden;text-overflow:ellipsis}
+.file-pick button{flex:none;height:38px;padding:0 14px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#F6F8F7;font:inherit;font-size:14px}
+.file-pick button:hover{background:rgba(255,255,255,.16)}
+.lock.leaving{animation:leave .55s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes leave{to{opacity:0;transform:scale(1.05);filter:blur(8px)}}
 
 /* ---------- каркас ---------- */
 .shell{display:grid;grid-template-columns:252px minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"side top" "side main";min-height:100vh}
@@ -676,84 +705,64 @@ function envelopeFromText(text) {   // .json копии или старый Се
   try { const e = JSON.parse(text.slice(start, end)); return e && e.format === 'seyf' ? e : null; } catch { return null; }
 }
 
-/* ===== замок и подключение ===== */
-function dialSvg() {
-  const P = (r, deg) => { const a = deg * Math.PI / 180; return [(Math.sin(a) * r).toFixed(2), (-Math.cos(a) * r).toFixed(2)]; };
-  let ticks = '', nums = '', grip = '';
-  for (let i = 0; i < 100; i++) { const long = i % 10 === 0, mid = i % 5 === 0; const [x1, y1] = P(80, i * 3.6), [x2, y2] = P(long ? 69 : mid ? 72.5 : 75.5, i * 3.6); ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${long ? 1.7 : .9}"/>`; }
-  for (let i = 0; i < 100; i += 10) { const [x, y] = P(59, i * 3.6); nums += `<text x="${x}" y="${(+y + 3.3).toFixed(2)}">${i}</text>`; }
-  for (let i = 0; i < 40; i++) { const [x1, y1] = P(28.5, i * 9), [x2, y2] = P(33.5, i * 9); grip += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; }
-  return `<svg class="dial" id="dial" viewBox="-100 -100 200 200" aria-hidden="true">
-    <defs>
-      <linearGradient id="dg-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1D898"/><stop offset=".45" stop-color="#C79E4B"/><stop offset="1" stop-color="#7E5C20"/></linearGradient>
-      <radialGradient id="dg-face" cx=".5" cy=".38" r=".62"><stop offset="0" stop-color="#2F574A"/><stop offset="1" stop-color="#15291F"/></radialGradient>
-    </defs>
-    <circle r="98" fill="url(#dg-brass)"/>
-    <circle r="91.5" fill="#132A22"/>
-    <g class="face" id="dial-face" style="transform:rotate(0deg)">
-      <circle r="86" fill="url(#dg-face)"/>
-      <g stroke="#DCC58F" stroke-linecap="round">${ticks}</g>
-      <g fill="#DCC58F" font-size="9.5" text-anchor="middle" font-family="Bahnschrift, 'Segoe UI', Roboto, sans-serif">${nums}</g>
-      <circle r="35" fill="url(#dg-brass)"/>
-      <g stroke="rgba(70,46,10,.5)" stroke-width="1.7">${grip}</g>
-      <circle r="19" fill="url(#dg-brass)" stroke="rgba(70,46,10,.35)"/>
-    </g>
-    <path d="M0 -82 L-6.5 -96 L6.5 -96 Z" fill="#EAD9B1" stroke="#132A22" stroke-width="1.2"/>
-  </svg>`;
+/* ===== экран входа ===== */
+const LOCK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/><path d="M12 14.6v2.3"/></svg>';
+const OPEN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>';
+function lockShell(inner) {
+  return `<div class="lock" id="lock"><div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div><div class="door" id="door"><div class="mark" id="mark">${LOCK_ICON}</div>${inner}</div></div>`;
 }
-function spinDial(by) {
-  const f = $('#dial-face'); if (!f) return;
-  S.dial += by ?? (Math.random() < .5 ? -1 : 1) * (18 + Math.random() * 42);
-  f.style.transform = `rotate(${S.dial.toFixed(1)}deg)`;
-}
+const pwField = (id, ph, ac) => `<div class="inp"><label class="sr" for="${id}">${ph}</label><input id="${id}" type="password" placeholder="${ph}" autocomplete="${ac}" spellcheck="false" autocapitalize="off"><button type="button" class="eye" data-act="peek" aria-label="Показать" title="Показать">${I('eye')}</button></div>`;
+function pulseMark() { const m = $('#mark'); if (!m || REDUCED) return; m.classList.remove('tick'); void m.offsetWidth; m.classList.add('tick'); }
+function autofocus(id) { setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) $('#' + id)?.focus(); }, 60); }
 function showSetup(note) {
-  S.lockMode = 'setup'; S.dial = 0; S.token = null; S.remote = undefined;
-  $('#app').innerHTML = `
-  <div class="lock" id="lock"><div class="door">
-    ${dialSvg()}
+  S.lockMode = 'setup'; S.token = null; S.remote = undefined;
+  const repo = (S.cfg && S.cfg.repo) || defaultRepo();
+  $('#app').innerHTML = lockShell(`
     <h1 class="lock-title">Сейф</h1>
-    <p class="lock-sub">${esc(note || 'Подключите это устройство к хранилищу на GitHub. Это нужно один раз.')}</p>
+    <p class="lock-sub">${esc(note || 'Подключите это устройство к хранилищу. Это нужно один раз.')}</p>
     <form class="lock-form" id="setup-form" autocomplete="off" novalidate>
-      <label class="sr" for="repo">Репозиторий</label>
-      <input id="repo" value="${esc((S.cfg && S.cfg.repo) || defaultRepo())}" placeholder="владелец/репозиторий" spellcheck="false" autocapitalize="off">
-      <label class="sr" for="tok">Ключ доступа GitHub</label>
-      <input id="tok" type="password" placeholder="Ключ доступа GitHub" spellcheck="false" autocapitalize="off" autocomplete="off">
+      ${repo ? `<p class="repo-line" id="repo-line">Хранилище ${esc(repo)}. <button type="button" class="lock-link" data-act="edit-repo">Изменить</button></p>` : ''}
+      <div class="inp" id="repo-wrap"${repo ? ' hidden' : ''}><label class="sr" for="repo">Репозиторий</label><input id="repo" value="${esc(repo)}" placeholder="Репозиторий: владелец/название" spellcheck="false" autocapitalize="off"></div>
+      ${pwField('tok', 'Ключ доступа GitHub', 'off')}
       <p class="lock-hint" id="lock-hint" aria-live="polite"></p>
-      <button class="lock-btn" id="lock-btn" type="submit">Подключить</button>
+      <button class="go" id="lock-btn" type="submit">Подключить</button>
     </form>
-    <p class="lock-foot">На телефоне проще: откройте сейф на компьютере, нажмите «Ещё», затем «Подключить телефон», и откройте полученную ссылку здесь.</p>
-  </div></div>`;
-  setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) $('#tok')?.focus(); }, 40);
+    <p class="lock-foot">На телефоне проще: на компьютере откройте «Ещё», затем «Подключить телефон», и перейдите по ссылке.</p>`);
+  autofocus('tok');
 }
 function showLock(mode, note) {
-  S.lockMode = mode; S.dial = 0;
+  S.lockMode = mode;
   const repo = S.cfg ? S.cfg.repo : '';
-  const sub = mode === 'create'
-    ? 'Хранилище пустое. Придумайте мастер-пароль: им зашифруется всё, что вы сюда положите.'
-    : (note || 'Введите мастер-пароль.');
-  $('#app').innerHTML = `
-  <div class="lock" id="lock"><div class="door">
-    ${dialSvg()}
-    <h1 class="lock-title">Сейф</h1>
-    <p class="lock-sub">${esc(sub)}</p>
+  $('#app').innerHTML = lockShell(mode === 'create' ? `
+    <h1 class="lock-title">Новый сейф</h1>
+    <p class="lock-sub">Придумайте мастер-пароль. Им зашифруется всё, что вы сюда положите.</p>
     <form class="lock-form" id="lock-form" autocomplete="off" novalidate>
-      <label class="sr" for="pw">Мастер-пароль</label>
-      <input id="pw" type="password" autocomplete="${mode === 'create' ? 'new-password' : 'current-password'}" placeholder="Мастер-пароль" spellcheck="false">
-      ${mode === 'create' ? `<label class="sr" for="pw2">Пароль ещё раз</label><input id="pw2" type="password" autocomplete="new-password" placeholder="Ещё раз, для проверки" spellcheck="false">
-      <div class="lock-file"><span id="imp-name">${S.importEnv ? esc(S.importEnv._name) : 'Начать с пустого сейфа'}</span><button type="button" data-act="pick-import">${S.importEnv ? 'Другой файл' : 'Взять из файла'}</button></div>` : ''}
+      ${pwField('pw', 'Мастер-пароль', 'new-password')}
+      ${pwField('pw2', 'Повторите пароль', 'new-password')}
+      <div class="file-pick"><span id="imp-name">${S.importEnv ? esc(S.importEnv._name) : 'Начать с пустого сейфа'}</span><button type="button" data-act="pick-import">${S.importEnv ? 'Другой файл' : 'Взять из файла'}</button></div>
       <p class="lock-hint" id="lock-hint" aria-live="polite"></p>
-      <button class="lock-btn" id="lock-btn" type="submit">${mode === 'create' ? 'Создать сейф' : 'Открыть'}</button>
+      <button class="go" id="lock-btn" type="submit">Создать сейф</button>
     </form>
-    <p class="lock-foot">${mode === 'create' ? 'Пароль нигде не хранится. Если его забыть, открыть сейф не сможет никто. Если берёте данные из старого Сейф.html, введите пароль от него.' : 'Хранилище: ' + esc(repo)}</p>
-    ${mode === 'open' ? '<button class="lock-link" type="button" data-act="reconnect">Подключиться заново</button>' : ''}
-  </div></div>`;
-  setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) $('#pw')?.focus(); }, 40);
+    <p class="lock-foot">Пароль нигде не хранится, восстановить его нельзя. Если берёте данные из старого Сейф.html, введите пароль от него.</p>` : `
+    <h1 class="lock-title">Сейф</h1>
+    <p class="lock-sub">${esc(note || 'Введите мастер-пароль')}</p>
+    <form class="lock-form" id="lock-form" autocomplete="off" novalidate>
+      ${pwField('pw', 'Мастер-пароль', 'current-password')}
+      <p class="lock-hint" id="lock-hint" aria-live="polite"></p>
+      <button class="go" id="lock-btn" type="submit">Открыть</button>
+    </form>
+    <p class="lock-foot">${esc(repo)}<br><button class="lock-link" type="button" data-act="reconnect">Подключиться заново</button></p>`);
+  autofocus('pw');
 }
 function lockFail(msg, shake) {
   const h = $('#lock-hint'); if (h) { h.textContent = msg; h.className = 'lock-hint'; }
-  if (shake) { const d = $('#dial'); if (d) { d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); } }
+  if (shake) { const d = $('#door'); if (d) { d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); } }
 }
-function busy(on, label) { const b = $('#lock-btn'); if (!b) return; if (on) { b.dataset.label = b.textContent; b.textContent = label; b.disabled = true; } else { b.textContent = b.dataset.label || b.textContent; b.disabled = false; } }
+function busy(on, label) {
+  $('#lock')?.classList.toggle('busy', on);
+  const b = $('#lock-btn'); if (!b) return;
+  if (on) { b.dataset.label = b.textContent; b.textContent = label; b.disabled = true; } else { b.textContent = b.dataset.label || b.textContent; b.disabled = false; }
+}
 async function onSetupSubmit() {
   const repo = $('#repo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
   const token = $('#tok').value.trim();
@@ -841,11 +850,11 @@ function openDoor() {
   mountShell(); render();
   if (!lockEl || REDUCED) return;
   $('#app').appendChild(lockEl);
-  void lockEl.offsetWidth;
+  lockEl.classList.remove('busy', 'focus');
+  const m = $('#mark', lockEl); if (m) { m.innerHTML = OPEN_ICON; m.classList.add('done'); }
   document.body.classList.add('opening');
-  lockEl.classList.add('opening');
-  spinDial(S.dial > 0 ? 540 : -540);
-  setTimeout(() => { lockEl.remove(); document.body.classList.remove('opening'); }, 1450);
+  setTimeout(() => lockEl.classList.add('leaving'), 320);
+  setTimeout(() => { lockEl.remove(); document.body.classList.remove('opening'); }, 900);
 }
 async function lock(note, keepToken) {
   if (!S.data) return;
@@ -1382,6 +1391,13 @@ async function act(t) {
       showSetup('Устройство отключено. Чтобы снова открыть сейф, подключите его.');
       break;
     case 'reconnect': S.cfg = S.cfg ? {repo: S.cfg.repo, path: S.cfg.path} : null; showSetup(); break;
+    case 'peek': {
+      const inp = t.parentElement.querySelector('input'), show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password'; t.innerHTML = I(show ? 'eyeOff' : 'eye');
+      t.setAttribute('aria-label', show ? 'Скрыть' : 'Показать'); t.title = show ? 'Скрыть' : 'Показать';
+      inp.focus(); break;
+    }
+    case 'edit-repo': $('#repo-wrap').hidden = false; $('#repo-line')?.remove(); $('#repo').focus(); $('#repo').select(); break;
     case 'pick-import': {
       const f = await pickFile('.html,.htm,.json,text/html,application/json'); if (!f) return;
       const env = envelopeFromText(await f.text());
@@ -1484,7 +1500,7 @@ document.addEventListener('submit', ev => {
 });
 document.addEventListener('input', ev => {
   const t = ev.target;
-  if (t.id === 'pw' || t.id === 'pw2' || t.id === 'tok') { spinDial(); return; }
+  if (t.id === 'pw' || t.id === 'pw2' || t.id === 'tok') { pulseMark(); return; }
   if (t.closest('dialog')) return;
   if (t.id === 'q') { S.query = t.value; renderMain(); return; }
   if (t.dataset.bind && t.tagName !== 'SELECT') {
@@ -1493,6 +1509,8 @@ document.addEventListener('input', ev => {
     if (/^p\.[^.]+\.name$/.test(t.dataset.bind) || /^pd\..+\.name$/.test(t.dataset.bind)) renderSide();
   }
 });
+document.addEventListener('focusin', ev => { const l = $('#lock'); if (l && l.contains(ev.target) && ev.target.tagName === 'INPUT') l.classList.add('focus'); });
+document.addEventListener('focusout', ev => { const l = $('#lock'); if (l && l.contains(ev.target)) setTimeout(() => { if (!l.contains(document.activeElement) || document.activeElement.tagName !== 'INPUT') l.classList.remove('focus'); }, 0); });
 document.addEventListener('change', ev => {
   const t = ev.target;
   if (t.closest('dialog')) return;
