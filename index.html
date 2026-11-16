@@ -318,6 +318,11 @@ dialog.dlg::backdrop{background:rgba(8,20,16,.55)}
 .dlg-err{min-height:1.4em;color:var(--seal);font-size:14px;margin:0}
 .link-box{width:100%;min-height:96px;padding:10px 12px;border-radius:7px;border:1px solid var(--rule);background:var(--paper);font:12.5px/1.5 var(--f-code);word-break:break-all;resize:none}
 .imp-group{margin:0 0 16px;padding:0;border:0}
+.imp-bar{display:flex;gap:6px;margin-top:12px}
+.imp-item input:disabled{opacity:.45}
+.title-row{display:flex;align-items:center;gap:4px}
+.title-row .title-input{flex:1;min-width:0}
+@supports (field-sizing:content){.title-row .title-input{flex:0 1 auto;width:auto;field-sizing:content;min-width:6ch;max-width:100%}}
 .imp-group legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;width:100%;padding:0 0 6px;font-weight:600}
 .imp-group legend span{font-weight:400;color:var(--ink-2);font-size:14px}
 .imp-group select{padding:4px 8px;border-radius:6px;border:1px solid var(--rule);background:var(--paper);font-size:14px}
@@ -543,7 +548,7 @@ function normalize(d) {
     for (const e of p.envs) { e.id ||= uid(); e.name ??= '.env'; e.path ??= ''; e.content ??= ''; if (!Array.isArray(e.history)) e.history = []; }
     for (const x of p.docs) { x.id ||= uid(); x.name ??= 'Документ.md'; x.path ??= ''; x.content ??= ''; }
   }
-  for (const s of d.servers) { s.id ||= uid(); for (const k of ['name', 'address', 'provider', 'access', 'note']) s[k] ??= ''; }
+  for (const s of d.servers) { s.id ||= uid(); for (const k of ['name', 'tag', 'address', 'provider', 'access', 'note']) s[k] ??= ''; }
   for (const s of d.secrets) { s.id ||= uid(); for (const k of ['title', 'value', 'note', 'project']) s[k] ??= ''; }
   return d;
 }
@@ -552,6 +557,9 @@ const srv = id => S.data.servers.find(s => s.id === id);
 const sec = id => S.data.secrets.find(s => s.id === id);
 const envOf = (pid, eid) => proj(pid)?.envs.find(e => e.id === eid);
 const docOf = (pid, did) => proj(pid)?.docs.find(x => x.id === did);
+const srvTag = s => (s.tag || '').trim();
+const srvLabel = s => (s.name || s.address || 'Сервер') + (srvTag(s) ? ` (${srvTag(s)})` : '');
+const srvCell = s => `<span class="mono">${esc(s.address || s.name)}</span>${srvTag(s) ? ` <span class="none">(${esc(srvTag(s))})</span>` : ''}`;
 
 function parseEnv(text) {
   const out = [];
@@ -971,7 +979,7 @@ function viewHome() {
     return `<tr data-act="go" data-href="#/p/${p.id}" tabindex="0">
       <td><strong>${esc(p.name || 'Без названия')}</strong>${p.about ? `<span class="sub">${esc(p.about)}</span>` : ''}</td>
       <td>${doms.length ? doms.map(x => esc(x.name)).join('<br>') : '<span class="none">нет</span>'}</td>
-      <td class="col-srv">${srvs.length ? srvs.map(s => `<span class="mono">${esc(s.address || s.name)}</span>`).join('<br>') : '<span class="none">не указан</span>'}</td>
+      <td class="col-srv">${srvs.length ? srvs.map(s => `${srvCell(s)}`).join('<br>') : '<span class="none">не указан</span>'}</td>
       <td class="num">${p.envs.length || '<span class="none">0</span>'}</td>
       <td class="num">${p.docs.length || '<span class="none">0</span>'}</td></tr>`;
   }).join('');
@@ -991,7 +999,7 @@ function viewProject(p) {
   const docs = [...p.docs].sort((a, b) => (a.path || a.name).localeCompare(b.path || b.name));
   return `
   <div class="view-head">
-    <input class="title-input" data-bind="p.${p.id}.name" value="${esc(p.name)}" placeholder="Название проекта" aria-label="Название проекта">
+    <div class="title-row"><input class="title-input" data-bind="p.${p.id}.name" value="${esc(p.name)}" placeholder="Название проекта" aria-label="Название проекта">${ib('edit', 'Переименовать проект', `data-act="rename" data-target="p.${p.id}.name"`)}</div>
     <textarea class="about auto" rows="1" data-bind="p.${p.id}.about" placeholder="Что это за проект, в двух словах" aria-label="Описание проекта">${esc(p.about)}</textarea>
     <dl class="facts">
       <dt>Папка</dt><dd class="with-act"><input class="field mono" data-bind="p.${p.id}.folder" value="${esc(p.folder)}" placeholder="C:\\Dev\\…" aria-label="Папка">${ib('copy', 'Копировать путь', 'data-act="copy-input"')}</dd>
@@ -1009,8 +1017,8 @@ function viewProject(p) {
       </div>`).join('')}</div>` : '<p class="empty">Доменов нет.</p>'}
   </section>
   <section class="block">
-    <div class="block-head"><h2>Серверы</h2>${free.length ? `<select class="btn" data-change="link-server" data-p="${p.id}" aria-label="Привязать сервер"><option value="">Привязать сервер…</option>${free.map(s => `<option value="${s.id}">${esc(s.name || s.address)}</option>`).join('')}</select>` : ''}</div>
-    ${srvs.length ? `<div class="chips">${srvs.map(s => `<span class="chip"><a href="#/servers">${esc(s.name || 'Сервер')}</a><span class="mono">${esc(s.address)}</span>${ib('x', 'Отвязать сервер', `data-act="unlink-server" data-p="${p.id}" data-s="${s.id}"`)}</span>`).join('')}</div>`
+    <div class="block-head"><h2>Серверы</h2>${free.length ? `<select class="btn" data-change="link-server" data-p="${p.id}" aria-label="Привязать сервер"><option value="">Привязать сервер…</option>${free.map(s => `<option value="${s.id}">${esc(srvLabel(s))}</option>`).join('')}</select>` : ''}</div>
+    ${srvs.length ? `<div class="chips">${srvs.map(s => `<span class="chip"><a href="#/servers">${esc(srvLabel(s))}</a><span class="mono">${esc(s.address)}</span>${ib('x', 'Отвязать сервер', `data-act="unlink-server" data-p="${p.id}" data-s="${s.id}"`)}</span>`).join('')}</div>`
       : `<p class="empty">Сервер не указан. ${S.data.servers.length ? 'Выберите его в списке справа.' : 'Заведите его в разделе «Серверы».'}</p>`}
   </section>
   <section class="block">
@@ -1080,8 +1088,9 @@ function viewServers() {
     ${list.map(s => {
       const used = S.data.projects.filter(p => p.servers.includes(s.id)), shown = S.reveal.has('s:' + s.id);
       return `<article class="srv">
-        <input class="title-input small" data-bind="s.${s.id}.name" value="${esc(s.name)}" placeholder="Название сервера" aria-label="Название сервера">
+        <div class="title-row"><input class="title-input small" data-bind="s.${s.id}.name" value="${esc(s.name)}" placeholder="Название сервера" aria-label="Название сервера">${ib('edit', 'Переименовать сервер', `data-act="rename" data-target="s.${s.id}.name"`)}</div>
         <dl class="facts">
+          <dt>Приписка</dt><dd><input class="field" data-bind="s.${s.id}.tag" value="${esc(s.tag)}" placeholder="Видна в скобках после названия: основной, тестовый, Hetzner" aria-label="Приписка"></dd>
           <dt>Адрес</dt><dd class="with-act"><input class="field mono" data-bind="s.${s.id}.address" value="${esc(s.address)}" placeholder="IP или имя" aria-label="Адрес" spellcheck="false" autocapitalize="off">${ib('copy', 'Копировать адрес', 'data-act="copy-input"')}</dd>
           <dt>Хостинг</dt><dd><input class="field" data-bind="s.${s.id}.provider" value="${esc(s.provider)}" placeholder="Где арендован, ссылка на панель" aria-label="Хостинг"></dd>
           <dt>Доступ</dt><dd class="with-act">${shown ? `<textarea class="field mono auto" rows="2" data-bind="s.${s.id}.access" placeholder="Логин, пароль, SSH-ключ" aria-label="Доступ" spellcheck="false" autocapitalize="off">${esc(s.access)}</textarea>`
@@ -1103,7 +1112,7 @@ function viewDomains() {
     ${rows.length ? `<div class="table-wrap"><table class="ledger"><thead><tr><th>Домен</th><th>Проект</th><th class="col-srv">Сервер</th><th>Заметка</th></tr></thead><tbody>${rows.map(({p, x}) => `<tr>
       <td>${safeHost(x.name) ? `<a href="https://${esc(x.name.trim())}" target="_blank" rel="noopener noreferrer"><strong>${esc(x.name)}</strong></a>` : `<strong>${esc(x.name)}</strong>`}</td>
       <td><a href="#/p/${p.id}">${esc(p.name)}</a></td>
-      <td class="col-srv">${p.servers.map(srv).filter(Boolean).map(s => `<span class="mono">${esc(s.address || s.name)}</span>`).join('<br>') || '<span class="none">не указан</span>'}</td>
+      <td class="col-srv">${p.servers.map(srv).filter(Boolean).map(s => `${srvCell(s)}`).join('<br>') || '<span class="none">не указан</span>'}</td>
       <td>${esc(x.note) || '<span class="none">нет</span>'}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Доменов пока нет.</p>'}`;
 }
 function viewDoc(p, x) {
@@ -1134,7 +1143,7 @@ function viewSearch(q) {
     if (has(p.notes)) res.push(['Заметка', p.name, snip(p.notes), `#/p/${p.id}`]);
   }
   for (const s of S.data.servers) {
-    if (has(s.name) || has(s.address) || has(s.provider) || has(s.note)) res.push(['Сервер', s.name || s.address, esc(s.address), '#/servers']);
+    if (has(s.name) || has(s.tag) || has(s.address) || has(s.provider) || has(s.note)) res.push(['Сервер', srvLabel(s), esc(s.address), '#/servers']);
     else if (deep && has(s.access)) res.push(['Доступ к серверу', s.name || s.address, '', '#/servers']);
   }
   for (const k of S.data.secrets) {
@@ -1302,24 +1311,38 @@ function importDialog(groups, rootName) {
       if (it.kind === 'env') envN++; else docN++;
       const ex = p && (it.kind === 'env' ? p.envs : p.docs).find(x => x.path === it.path);
       it.state = !ex ? 'new' : ex.content === it.text ? 'same' : 'upd';
-      it.checked = it.state !== 'same' && !(it.kind === 'env' && it.example) && !(it.kind === 'doc' && it.size > 300 * 1024);
+      it.checked = it.state !== 'same';
     });
   });
   const opts = g => S.data.projects.map(p => `<option value="${p.id}"${p.id === g.pid ? ' selected' : ''}>${esc(p.name)}</option>`).join('') + `<option value="__new"${g.pid === '__new' ? ' selected' : ''}>Новый проект «${esc(g.folder)}»</option><option value="__skip">Не загружать</option>`;
-  const tag = it => it.state === 'same' ? '<span class="tag">без изменений</span>' : it.state === 'upd' ? '<span class="tag upd">обновится</span>' : it.example ? '<span class="tag">пример</span>' : '<span class="tag new">новый</span>';
+  const tag = it => it.state === 'same' ? '<span class="tag">уже в сейфе</span>' : it.state === 'upd' ? '<span class="tag upd">обновится</span>' : it.example ? '<span class="tag">пример</span>' : '<span class="tag new">новый</span>';
+  const fresh = groups.reduce((n, g) => n + g.items.filter(it => it.state !== 'same').length, 0);
   const d = dialog(`<div class="dlg-head"><h2>Загрузка из папки «${esc(rootName)}»</h2>
-      <p>Нашлось ${nw(envN, 'файл', 'файла', 'файлов')} .env и ${nw(docN, 'документ', 'документа', 'документов')}. Отметьте, что загрузить. Примеры .env и большие документы по умолчанию не отмечены.</p></div>
+      <p>Нашлось ${nw(envN, 'файл', 'файла', 'файлов')} .env и ${nw(docN, 'документ', 'документа', 'документов')}. ${fresh ? 'Всё новое и изменённое уже отмечено.' : 'Новых и изменённых файлов нет: всё уже лежит в сейфе.'} Файлы с пометкой «уже в сейфе» загружены раньше и не менялись.</p>
+      ${fresh ? '<div class="imp-bar"><button class="btn sm" type="button" data-dlg="all">Отметить всё</button><button class="btn sm quiet" type="button" data-dlg="none">Снять всё</button></div>' : ''}</div>
     <div class="dlg-body">${groups.map((g, gi) => `<fieldset class="imp-group"><legend><span class="mono" style="color:var(--ink)">${esc(g.folder)}</span><span>в проект</span><select data-g="${gi}" aria-label="Проект для ${esc(g.folder)}">${opts(g)}</select></legend>
-      ${g.items.map((it, ii) => `<label class="imp-item"><input type="checkbox" data-g="${gi}" data-i="${ii}"${it.checked ? ' checked' : ''}><span class="k">${it.kind === 'env' ? '.env' : 'текст'}</span><span class="p" title="${esc(it.path)}">${esc(it.path)}</span>${tag(it)}<span class="tag size">${fmtSize(it.size)}</span></label>`).join('')}</fieldset>`).join('')}</div>
-    <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Отмена</button><button class="btn primary" type="button" data-dlg="ok">Загрузить отмеченное</button></div>`, 'wide');
+      ${g.items.map((it, ii) => `<label class="imp-item"><input type="checkbox" data-g="${gi}" data-i="${ii}"${it.state === 'same' ? ' checked disabled' : it.checked ? ' checked' : ''}><span class="k">${it.kind === 'env' ? '.env' : 'текст'}</span><span class="p" title="${esc(it.path)}">${esc(it.path)}</span>${tag(it)}<span class="tag size">${fmtSize(it.size)}</span></label>`).join('')}</fieldset>`).join('')}</div>
+    <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Отмена</button><button class="btn primary" type="button" data-dlg="ok"><span>Загрузить отмеченное (<span id="imp-n">0</span>)</span></button></div>`, 'wide');
+  const countSel = () => groups.reduce((n, g) => g.pid === '__skip' ? n : n + g.items.filter(it => it.checked && it.state !== 'same').length, 0);
+  const upd = () => { const el = $('#imp-n', d); if (el) el.textContent = countSel(); };
+  upd();
   d.addEventListener('change', e => {
     const t = e.target;
     if (t.tagName === 'SELECT') groups[+t.dataset.g].pid = t.value;
     if (t.type === 'checkbox') groups[+t.dataset.g].items[+t.dataset.i].checked = t.checked;
+    upd();
   });
   d.addEventListener('click', e => {
     const b = e.target.closest('[data-dlg]'); if (!b) return;
     if (b.dataset.dlg === 'close') return d.close();
+    if (b.dataset.dlg === 'all' || b.dataset.dlg === 'none') {
+      const on = b.dataset.dlg === 'all';
+      groups.forEach((g, gi) => g.items.forEach((it, ii) => {
+        if (it.state === 'same') return;
+        it.checked = on; const cb = $(`input[data-g="${gi}"][data-i="${ii}"]`, d); if (cb) cb.checked = on;
+      }));
+      upd(); return;
+    }
     let added = 0, updated = 0, newP = 0;
     for (const g of groups) {
       if (g.pid === '__skip') continue;
@@ -1397,6 +1420,7 @@ async function act(t) {
       t.setAttribute('aria-label', show ? 'Скрыть' : 'Показать'); t.title = show ? 'Скрыть' : 'Показать';
       inp.focus(); break;
     }
+    case 'rename': { const el = $(`[data-bind="${t.dataset.target}"]`); if (el) { el.focus(); el.select(); toast('Впишите новое название, оно сохранится само'); } break; }
     case 'edit-repo': $('#repo-wrap').hidden = false; $('#repo-line')?.remove(); $('#repo').focus(); $('#repo').select(); break;
     case 'pick-import': {
       const f = await pickFile('.html,.htm,.json,text/html,application/json'); if (!f) return;
@@ -1454,7 +1478,7 @@ async function act(t) {
     case 'dl-doc': { const x = docOf(pid, t.dataset.doc); download(x.content, x.name || 'Документ.md', 'text/markdown'); break; }
     case 'del-doc': { const x = docOf(pid, t.dataset.doc); if (!confirm(`Удалить документ «${x.name}»?`)) return; p.docs = p.docs.filter(z => z !== x); touch(); go(`#/p/${p.id}`); break; }
     case 'add-server': { const s = normalize({servers: [{name: 'Новый сервер'}]}).servers[0]; S.data.servers.push(s); touch(); renderSide(); renderMain(true); const el = $(`[data-bind="s.${s.id}.name"]`); if (el) { el.focus(); el.select(); } break; }
-    case 'del-server': { const s = srv(sid); if (!confirm(`Удалить сервер «${s.name || s.address}»? Из проектов он тоже отвяжется.`)) return; S.data.servers = S.data.servers.filter(x => x !== s); S.data.projects.forEach(x => { x.servers = x.servers.filter(y => y !== sid); }); touch(); renderSide(); renderMain(true); break; }
+    case 'del-server': { const s = srv(sid); if (!confirm(`Удалить сервер «${srvLabel(s)}»? Из проектов он тоже отвяжется.`)) return; S.data.servers = S.data.servers.filter(x => x !== s); S.data.projects.forEach(x => { x.servers = x.servers.filter(y => y !== sid); }); touch(); renderSide(); renderMain(true); break; }
     case 'copy-access': copy(srv(sid).access, 'Доступ скопирован'); break;
     case 'add-secret': { const k = normalize({secrets: [{}]}).secrets[0]; S.data.secrets.push(k); S.reveal.add('k:' + k.id); touch(); renderSide(); renderMain(true); $(`[data-bind="k.${k.id}.title"]`)?.focus(); break; }
     case 'del-secret': { const k = sec(kid); if ((k.title || k.value) && !confirm(`Удалить запись «${k.title || 'без названия'}»?`)) return; S.data.secrets = S.data.secrets.filter(x => x !== k); touch(); renderSide(); renderMain(true); break; }
