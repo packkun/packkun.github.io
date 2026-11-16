@@ -1,0 +1,1558 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.github.com; manifest-src 'self'; worker-src 'self'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#1E3A31">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Сейф">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231E3A31'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23C9A04C' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%23C9A04C'/%3E%3Cpath d='M16 3v6' stroke='%23C9A04C' stroke-width='2.5'/%3E%3C/svg%3E">
+<title>Сейф</title>
+<style>
+:root{
+  --enamel:#1E3A31;--enamel-2:#29493E;--enamel-line:rgba(220,230,223,.13);--enamel-ink:#DCE6DF;--enamel-dim:#9AB2A6;
+  --plate:#EAD9B1;--brass:#B4893A;--brass-ink:#1C1406;
+  --paper:#ECEFE9;--sheet:#F9FAF7;--ink:#17211D;--ink-2:#56635C;--rule:#CCD3CB;--rule-2:#E2E7E0;--hover:#E3E8E1;
+  --tint:#F4EBD3;--mark:#F1DFA6;
+  --seal:#A2372C;--ok:#2E6A4E;--warn:#8A611C;
+  --f-ui:"Bahnschrift","DIN Alternate","Segoe UI Variable Text","Segoe UI",Roboto,system-ui,sans-serif;
+  --f-code:"Cascadia Mono","Cascadia Code",Consolas,"Roboto Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --enamel:#0F221C;--enamel-2:#193329;--enamel-ink:#D3DFD7;--enamel-dim:#86A094;
+  --brass:#CBA14E;
+  --paper:#121A17;--sheet:#19231F;--ink:#E0E6E1;--ink-2:#9AA89F;--rule:#2E3B35;--rule-2:#232E29;--hover:#22302A;
+  --tint:#2C2617;--mark:#5C4B1D;
+  --seal:#E07A6A;--ok:#74B993;--warn:#D9B266;
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--f-ui);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-tap-highlight-color:transparent}
+body.opening{overflow:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg{display:block}
+
+/* ---------- замок ---------- */
+.lock{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:32px 16px;overflow:auto;
+  background:radial-gradient(110% 80% at 50% 18%,#2B5145 0%,#1E3A31 55%,#162C25 100%);color:#DCE6DF;transform-origin:0 50%}
+.door{width:min(340px,100%);display:flex;flex-direction:column;align-items:center;text-align:center}
+.dial{width:200px;height:200px;margin:0 0 20px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35));user-select:none;-webkit-user-select:none;pointer-events:none}
+.dial .face{transform-box:fill-box;transform-origin:center;transition:transform .35s cubic-bezier(.3,1.45,.5,1)}
+.dial.shake{animation:shake .45s ease}
+@keyframes shake{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.lock-title{margin:0;font-size:42px;line-height:1.05;font-weight:600;font-stretch:87.5%;letter-spacing:.02em;color:var(--plate)}
+.lock-sub{margin:10px 0 22px;color:#B9CCC2;max-width:32ch}
+.lock-form{width:100%;display:grid;gap:10px}
+.lock-form input{width:100%;padding:12px 14px;border-radius:7px;border:1px solid rgba(234,217,177,.32);background:rgba(4,14,11,.32);color:#F2EAD6;font-size:16px}
+.lock-form input::placeholder{color:#8FA79B}
+.lock-form input:focus{outline:none;border-color:var(--plate);box-shadow:0 0 0 3px rgba(234,217,177,.18)}
+.lock-hint{margin:0;min-height:1.5em;font-size:14px;color:#F0B9A9}
+.lock-hint.ok{color:#B9CCC2}
+.lock-btn{padding:12px 16px;border:0;border-radius:7px;background:linear-gradient(#D6B064,#B4893A);color:#1C1406;font-weight:600;font-size:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 0 #7A5A1F}
+.lock-btn:hover{filter:brightness(1.06)}
+.lock-btn:disabled{filter:saturate(.4);cursor:progress}
+.lock-foot{margin:20px 0 0;font-size:13.5px;color:#93AC9F;max-width:34ch}
+.lock-link{margin-top:8px;border:0;background:none;color:#B9CCC2;text-decoration:underline;text-underline-offset:3px;font-size:13.5px;padding:4px}
+.lock-link:hover{color:var(--plate)}
+.lock-file{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:7px;border:1px dashed rgba(234,217,177,.32);color:#B9CCC2;font-size:14px;text-align:left}
+.lock-file button{flex:none;border:1px solid rgba(234,217,177,.4);border-radius:6px;background:rgba(234,217,177,.08);color:var(--plate);padding:5px 10px;font-size:13.5px}
+.lock.opening .face{transition:transform .9s cubic-bezier(.2,.75,.25,1)}
+.lock.opening{animation:door .75s .62s cubic-bezier(.55,0,.75,.2) forwards;box-shadow:30px 0 60px rgba(0,0,0,.45)}
+@keyframes door{to{transform:perspective(1800px) rotateY(-96deg);opacity:.15}}
+
+/* ---------- каркас ---------- */
+.shell{display:grid;grid-template-columns:252px minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"side top" "side main";min-height:100vh}
+.side{grid-area:side;position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column;background:var(--enamel);color:var(--enamel-ink)}
+.brand{display:flex;align-items:center;gap:10px;padding:20px 20px 10px;font-size:23px;font-weight:600;font-stretch:87.5%;letter-spacing:.02em;color:var(--plate)}
+.brand svg{width:24px;height:24px;color:#C9A04C}
+.nav{flex:1;padding-bottom:12px}
+.nav-label{margin:18px 20px 4px;font-size:12.5px;color:var(--enamel-dim)}
+.nav a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 20px 6px 17px;border-left:3px solid transparent;text-decoration:none;color:var(--enamel-ink)}
+.nav a:hover{background:rgba(255,255,255,.05)}
+.nav a[aria-current="page"]{background:rgba(255,255,255,.08);border-left-color:#C9A04C;color:#fff}
+.nav .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav .count{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;color:var(--enamel-dim);font-variant-numeric:tabular-nums;flex:none}
+.nav .count svg{width:13px;height:13px}
+.nav .add{display:flex;align-items:center;gap:6px;margin:6px 20px 0;padding:4px 0;border:0;background:none;color:var(--enamel-dim);font-size:14px}
+.nav .add:hover{color:var(--enamel-ink)}
+.nav .add svg{width:15px;height:15px}
+.side-foot{padding:14px 20px 20px;border-top:1px solid var(--enamel-line)}
+.side-btn{width:100%;margin-bottom:8px;padding:9px 12px;border-radius:7px;border:1px solid rgba(234,217,177,.35);background:rgba(234,217,177,.07);color:var(--plate);font-weight:500;text-align:left}
+.side-btn:hover{background:rgba(234,217,177,.14)}
+.side-note{margin:4px 0 0;font-size:12.5px;line-height:1.45;color:var(--enamel-dim)}
+.scrim{display:none}
+
+.top{grid-area:top;position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 32px;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.search{flex:1 1 220px;min-width:160px;max-width:440px;position:relative}
+.search input{width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--rule);background:var(--sheet);font-size:15px}
+.search input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 22%,transparent)}
+.status{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.status.is-dirty,.status.is-saving{color:var(--warn)}
+.status.is-dirty::before,.status.is-saving::before{background:var(--brass)}
+.status.is-saving::before{animation:pulse 1s ease-in-out infinite}
+.status.is-off,.status.is-err{color:var(--seal)}
+.status.is-off::before,.status.is-err::before{background:var(--seal)}
+@keyframes pulse{50%{opacity:.3}}
+.more{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;min-width:280px;padding:6px;border-radius:9px;border:1px solid var(--rule);background:var(--sheet);box-shadow:0 14px 40px rgba(10,25,20,.18)}
+.menu button,.menu .menu-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:6px;background:none;text-align:left;font-size:14.5px}
+.menu button:hover{background:var(--hover)}
+.menu hr{border:0;border-top:1px solid var(--rule-2);margin:5px 4px}
+.menu select{padding:3px 6px;border-radius:5px;border:1px solid var(--rule);background:var(--paper)}
+.menu .danger{color:var(--seal)}
+
+main{grid-area:main;width:100%;max-width:1060px;padding:30px 32px 96px}
+main:focus{outline:none}
+
+/* ---------- элементы ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:7px;border:1px solid var(--rule);background:var(--sheet);font-size:14px;line-height:1.3;white-space:nowrap}
+.btn:hover{border-color:var(--ink-2)}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--brass);border-color:var(--brass);color:var(--brass-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--ink-2)}
+.btn.quiet:hover{background:var(--hover);color:var(--ink)}
+.btn.danger{color:var(--seal)}
+.btn.danger:hover{background:color-mix(in srgb,var(--seal) 10%,transparent);color:var(--seal)}
+.btn.sm{padding:4px 10px;font-size:13.5px}
+.btn:disabled{opacity:.6;cursor:progress}
+select.btn{padding-right:28px}
+.ib{display:inline-grid;place-items:center;width:34px;height:34px;flex:none;border:0;border-radius:7px;background:transparent;color:var(--ink-2)}
+.ib:hover{background:var(--hover);color:var(--ink)}
+.ib svg{width:17px;height:17px}
+.only-narrow{display:none}
+.mono{font-family:var(--f-code);font-size:.92em}
+.none{color:var(--ink-2);opacity:.8}
+.empty{margin:0;color:var(--ink-2)}
+.empty.pad{padding:12px 16px}
+
+.h1,.title-input{margin:0;font-size:34px;line-height:1.15;font-weight:600;font-stretch:87.5%;letter-spacing:.005em}
+.lede{margin:8px 0 0;color:var(--ink-2);font-size:16px;max-width:68ch}
+.view-head{margin:0 0 26px}
+.title-input{display:block;width:100%;padding:2px 0;border:0;border-bottom:1px dashed transparent;background:transparent}
+.title-input:hover{border-bottom-color:var(--rule)}
+.title-input:focus{outline:none;border-bottom-color:var(--brass)}
+.title-input.small{font-size:22px}
+textarea{resize:vertical}
+textarea.auto{overflow:hidden;resize:none}
+.about{display:block;width:100%;max-width:68ch;margin-top:8px;padding:4px 8px;margin-left:-8px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ink-2);font-size:16px;line-height:1.5}
+.about:hover{border-color:var(--rule)}
+.about:focus{outline:none;border-color:var(--brass);background:var(--sheet);color:var(--ink)}
+.field{width:100%;min-width:0;padding:5px 8px;border:1px solid transparent;border-radius:6px;background:transparent;line-height:1.45}
+.field:hover{border-color:var(--rule)}
+.field:focus{outline:none;border-color:var(--brass);background:var(--sheet)}
+.field.strong{font-weight:600}
+select.field{border-color:var(--rule-2);background:var(--sheet)}
+.facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 22px;margin:20px 0 0;max-width:780px}
+.facts dt{padding-top:6px;color:var(--ink-2);font-size:14px}
+.facts dd{margin:0 0 0 -8px;min-width:0}
+.with-act{display:flex;align-items:center;gap:2px}
+.with-act>.val{padding:5px 8px}
+
+.block{margin-top:38px;padding-top:18px;border-top:1px solid var(--rule)}
+.block-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}
+.block-head h2{margin:0;font-size:20px;font-weight:600;font-stretch:87.5%}
+.head-acts{display:flex;flex-wrap:wrap;gap:4px}
+.h3{margin:22px 0 8px;font-size:16px;font-weight:600}
+
+.rows{display:grid;gap:2px}
+.row{display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr) auto;align-items:center;gap:6px}
+.row-acts{display:flex}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);text-decoration:none;font-size:14px}
+a.chip{padding:3px 12px}
+a.chip:hover{border-color:var(--ink-2)}
+.chip .ib{width:26px;height:26px}
+.chip .ib svg{width:14px;height:14px}
+
+/* .env */
+.env{margin:0 0 14px;border:1px solid var(--rule);border-radius:9px;background:var(--sheet);overflow:hidden}
+.env.is-example{background:transparent;border-style:dashed}
+.env-head{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--rule-2)}
+.env-file{font-family:var(--f-code);font-size:14.5px;font-weight:600}
+.env-meta{color:var(--ink-2);font-size:13.5px}
+.env-actions{display:flex;align-items:center;gap:2px;margin-left:auto}
+.kv{width:100%;border-collapse:collapse;font-size:14px}
+.kv th{width:1%;padding:6px 18px 6px 16px;text-align:left;vertical-align:top;white-space:nowrap;font:500 13.5px/1.6 var(--f-code)}
+.kv td{padding:6px 8px;vertical-align:top}
+.kv tr+tr>*{border-top:1px solid var(--rule-2)}
+.kv td.acts{width:1%;white-space:nowrap;padding:1px 6px;text-align:right}
+.val{font:13.5px/1.6 var(--f-code);word-break:break-all;white-space:pre-wrap}
+.val.masked{letter-spacing:.18em;color:var(--ink-2)}
+.code-edit{display:block;width:100%;min-height:140px;padding:12px 16px;border:0;border-bottom:1px solid var(--rule-2);background:var(--sheet);font:13.5px/1.6 var(--f-code);white-space:pre;overflow-x:auto}
+.code-edit:focus{outline:none;box-shadow:inset 0 0 0 2px var(--brass)}
+.env-rename{display:flex;flex-wrap:wrap;gap:8px 18px;padding:10px 16px;font-size:13.5px;color:var(--ink-2)}
+.env-rename label{display:flex;align-items:center;gap:6px}
+.env-rename .field{width:220px;border-color:var(--rule);font-family:var(--f-code);font-size:13.5px;color:var(--ink)}
+.dropzone{padding:18px;border:1.5px dashed var(--rule);border-radius:9px;color:var(--ink-2)}
+main.drag .dropzone,main.drag .env{border-color:var(--brass)}
+
+/* записи */
+.secret{display:grid;grid-template-columns:minmax(160px,1.1fr) minmax(0,1.4fr) minmax(120px,.8fr) minmax(0,1fr) auto;align-items:start;gap:6px;padding:6px 0;border-bottom:1px solid var(--rule-2)}
+.secret .with-act{align-items:flex-start}
+.secret-head{display:grid;grid-template-columns:minmax(160px,1.1fr) minmax(0,1.4fr) minmax(120px,.8fr) minmax(0,1fr) 34px;gap:6px;padding:0 8px 6px;color:var(--ink-2);font-size:13px;border-bottom:1px solid var(--rule)}
+.srv{padding:22px 0;border-bottom:1px solid var(--rule)}
+.srv:first-of-type{padding-top:4px}
+.danger-zone{margin-top:28px}
+.srv .danger-zone{margin-top:10px}
+
+/* таблицы */
+.table-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:9px;background:var(--sheet)}
+.ledger{width:100%;border-collapse:collapse;font-size:14.5px}
+.ledger th{padding:10px 14px;text-align:left;font-weight:500;font-size:13px;color:var(--ink-2);border-bottom:1px solid var(--rule);white-space:nowrap}
+.ledger td{padding:11px 14px;vertical-align:top;border-top:1px solid var(--rule-2)}
+.ledger tbody tr:first-child td{border-top:0}
+.ledger tr[data-act]{cursor:pointer}
+.ledger tr[data-act]:hover td{background:var(--hover)}
+.ledger tr[data-act]:focus-visible{outline-offset:-2px}
+.ledger .sub{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;margin-top:2px;color:var(--ink-2);font-size:13.5px;line-height:1.4;max-width:40ch;overflow:hidden}
+.ledger .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger a{text-decoration-color:var(--rule);text-underline-offset:3px}
+.ledger a:hover{text-decoration-color:currentColor}
+@media (max-width:1180px){.ledger .col-srv{display:none}}
+
+.callout{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px 24px;margin:0 0 26px;padding:18px 20px;border-radius:9px;background:var(--tint)}
+.callout h2{margin:0 0 4px;font-size:18px;font-weight:600}
+.callout p{margin:0;max-width:62ch;color:var(--ink-2)}
+.banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;margin:0 0 26px;padding:14px 18px;border-radius:9px;border:1px solid var(--brass);background:var(--tint)}
+.banner p{margin:0;max-width:70ch}
+
+/* документы */
+.docs{list-style:none;margin:0;padding:0}
+.docs li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--rule-2)}
+.docs a{font-weight:500;text-decoration:none;overflow-wrap:anywhere}
+.docs a:hover{text-decoration:underline;text-underline-offset:3px}
+.doc-meta{color:var(--ink-2);font-size:13.5px;white-space:nowrap}
+.crumbs{margin-bottom:10px;font-size:14px;color:var(--ink-2)}
+.crumbs a{text-underline-offset:3px}
+.doc-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.doc-head .h1,.doc-head .title-input{flex:1;min-width:200px;overflow-wrap:anywhere}
+.doc-edit{min-height:60vh;border:1px solid var(--rule);border-radius:9px;margin-top:18px;white-space:pre-wrap}
+.notes{display:block;width:100%;min-height:110px;padding:12px 14px;border:1px solid var(--rule);border-radius:9px;background:var(--sheet);line-height:1.55}
+.notes:focus{outline:none;border-color:var(--brass)}
+.md{max-width:74ch;margin-top:22px;font-size:15.5px;line-height:1.62;overflow-wrap:anywhere}
+.md h2,.md h3,.md h4,.md h5,.md h6{margin:1.6em 0 .5em;line-height:1.25;font-weight:600}
+.md h2{font-size:24px;font-stretch:87.5%}
+.md h3{font-size:19px}
+.md h4,.md h5,.md h6{font-size:16px}
+.md>:first-child{margin-top:0}
+.md p,.md ul,.md ol,.md blockquote,.md pre,.md .md-table{margin:0 0 1em}
+.md ul,.md ol{padding-left:1.4em}
+.md li+li{margin-top:.25em}
+.md code{padding:.1em .35em;border-radius:4px;background:var(--rule-2);font:.88em var(--f-code)}
+.md pre{padding:12px 14px;border-radius:8px;background:var(--rule-2);overflow-x:auto}
+.md pre code{padding:0;background:none;font-size:13px;line-height:1.55}
+.md blockquote{padding:2px 0 2px 14px;border-left:3px solid var(--brass);color:var(--ink-2)}
+.md hr{border:0;border-top:1px solid var(--rule);margin:1.6em 0}
+.md .md-table{overflow-x:auto}
+.md table{border-collapse:collapse;font-size:14px}
+.md th,.md td{padding:6px 10px;border:1px solid var(--rule);text-align:left;vertical-align:top}
+.md th{background:var(--rule-2);font-weight:600}
+.md a{text-underline-offset:3px}
+
+/* поиск */
+.results{list-style:none;margin:0;padding:0}
+.results li{border-bottom:1px solid var(--rule-2)}
+.results a{display:grid;grid-template-columns:130px minmax(0,1fr);gap:4px 16px;padding:10px 4px;text-decoration:none}
+.results a:hover{background:var(--hover)}
+.results .kind{color:var(--ink-2);font-size:13.5px;padding-top:1px}
+.results .t{font-weight:600}
+.results .s{grid-column:2;color:var(--ink-2);font-size:14px;overflow:hidden;text-overflow:ellipsis}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+
+/* диалоги */
+dialog.dlg{width:min(680px,calc(100% - 24px));max-height:calc(100vh - 32px);padding:0;border:0;border-radius:12px;background:var(--sheet);color:var(--ink);box-shadow:0 24px 70px rgba(5,15,12,.4)}
+dialog.dlg::backdrop{background:rgba(8,20,16,.55)}
+.dlg-in{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.dlg-head{padding:20px 22px 12px}
+.dlg-head h2{margin:0;font-size:21px;font-weight:600;font-stretch:87.5%}
+.dlg-head p{margin:6px 0 0;color:var(--ink-2)}
+.dlg-body{padding:4px 22px 12px;overflow:auto}
+.dlg-body p{margin:0 0 .8em}
+.dlg-foot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:12px 22px 18px;border-top:1px solid var(--rule-2)}
+.dlg-body label.fld{display:grid;gap:4px;margin-bottom:12px;font-size:14px;color:var(--ink-2)}
+.dlg-body label.fld input{padding:9px 12px;border-radius:7px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:15px}
+.dlg-body label.fld input:focus{outline:none;border-color:var(--brass)}
+.dlg-err{min-height:1.4em;color:var(--seal);font-size:14px;margin:0}
+.link-box{width:100%;min-height:96px;padding:10px 12px;border-radius:7px;border:1px solid var(--rule);background:var(--paper);font:12.5px/1.5 var(--f-code);word-break:break-all;resize:none}
+.imp-group{margin:0 0 16px;padding:0;border:0}
+.imp-group legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;width:100%;padding:0 0 6px;font-weight:600}
+.imp-group legend span{font-weight:400;color:var(--ink-2);font-size:14px}
+.imp-group select{padding:4px 8px;border-radius:6px;border:1px solid var(--rule);background:var(--paper);font-size:14px}
+.imp-item{display:grid;grid-template-columns:20px 44px minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:5px 2px;border-top:1px solid var(--rule-2);font-size:14px}
+.imp-item .k{color:var(--ink-2);font-size:12.5px}
+.imp-item .p{font-family:var(--f-code);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.tag.new{color:var(--ok)}
+.tag.upd{color:var(--warn)}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule-2)}
+.hist pre{margin:8px 0 0;padding:10px;border-radius:7px;background:var(--rule-2);font:12.5px/1.5 var(--f-code);white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
+
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));z-index:80;max-width:calc(100% - 32px);padding:10px 16px;border-radius:9px;background:var(--enamel);color:var(--plate);font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.25);transform:translate(-50%,16px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- узкие экраны ---------- */
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);grid-template-areas:"top" "main"}
+  .side{position:fixed;left:0;top:0;bottom:0;z-index:30;width:min(290px,86vw);height:auto;transform:translateX(-102%);transition:transform .22s ease}
+  .shell.side-open .side{transform:none}
+  .shell.side-open .scrim{display:block;position:fixed;inset:0;z-index:25;background:rgba(8,20,16,.45)}
+  .only-narrow{display:inline-grid}
+  .hide-narrow{display:none}
+  .top{flex-wrap:wrap;padding:10px 12px;gap:6px}
+  .status{font-size:0;gap:0;padding:0 6px}
+  .search{order:5;flex-basis:100%;max-width:none}
+  main{padding:22px 16px 80px}
+  .h1,.title-input{font-size:28px}
+  .facts{grid-template-columns:minmax(0,1fr);gap:0}
+  .facts dt{padding-top:10px}
+  .row{grid-template-columns:minmax(0,1fr) auto}
+  .row .field:nth-child(2){grid-column:1/-1;grid-row:2}
+  .secret,.secret-head{grid-template-columns:minmax(0,1fr) auto}
+  .secret-head{display:none}
+  .secret>*:not(.ib){grid-column:1}
+  .secret>.ib{grid-column:2;grid-row:1}
+  .kv,.kv tbody,.kv tr{display:block}
+  .kv tr{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:6px 0}
+  .kv th{width:auto;padding:2px 16px 0;white-space:normal;word-break:break-all}
+  .kv td{padding:0 16px}
+  .kv td.acts{grid-column:2;grid-row:1/3;align-self:center;width:auto;padding:0 6px}
+  .kv tr+tr>*{border-top:0}
+  .kv tr+tr{border-top:1px solid var(--rule-2)}
+  .results a{grid-template-columns:minmax(0,1fr)}
+  .results .s{grid-column:1}
+  .imp-item{grid-template-columns:20px 40px minmax(0,1fr) auto}
+  .imp-item .size{display:none}
+  .docs li{flex-wrap:wrap;gap:2px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+'use strict';
+
+const ITER = 600000;
+const VAULT_PATH = 'vault.json';
+const CFG_KEY = 'seyf.cfg', CACHE_KEY = 'seyf.cache', PENDING_KEY = 'seyf.pending';
+const te = new TextEncoder(), td = new TextDecoder();
+const AAD = te.encode('seyf/1'), AAD_TOK = te.encode('seyf/tok');
+const HAS_DIR = typeof window.showDirectoryPicker === 'function';
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => [...crypto.getRandomValues(new Uint8Array(6))].map(x => x.toString(36).padStart(2, '0')).join('').slice(0, 10);
+const nowIso = () => new Date().toISOString();
+
+const S = {
+  cfg: null,          // {repo, path, tok} — хранится на устройстве; tok — ключ GitHub, зашифрованный мастер-паролем
+  token: null,        // ключ GitHub в памяти, пока сейф открыт
+  remote: undefined,  // {env, sha} — что лежит в репозитории (загружено на экране замка)
+  importEnv: null,    // данные из файла для первого создания
+  sha: null,          // версия файла в репозитории, от которой мы отталкиваемся
+  key: null, salt: null, iter: ITER, check: null,
+  data: null, dirty: false, ver: 0, saving: false, again: false, offline: false, saveErr: '',
+  autoT: null, stashT: null, lastSync: 0,
+  reveal: new Set(), editEnv: new Set(), envSnap: {}, editDoc: null,
+  query: '', lockMode: 'open', dial: 0, lastAct: Date.now()
+};
+
+/* ===== иконки ===== */
+const ic = {
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M3 3l18 18"/><path d="M10.6 5.1Q11.3 5 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 4.1M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.8 0 3.4-.5 4.8-1.3"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/>',
+  download:'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
+  trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>',
+  ext:'<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l3 3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  history:'<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5"/><path d="M12 7.5V12l3 2"/>'
+};
+const I = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic[n]}</svg>`;
+const ib = (icon, label, attrs = '') => `<button type="button" class="ib" title="${esc(label)}" aria-label="${esc(label)}" ${attrs}>${I(icon)}</button>`;
+
+/* ===== форматирование ===== */
+function plural(n, a, b, c) { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; }
+const nw = (n, a, b, c) => `${n} ${plural(n, a, b, c)}`;
+function fmtDay(iso) { try { return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}).replace(' г.', ''); } catch { return ''; } }
+function fmtTime(iso) { try { return fmtDay(iso) + ', ' + new Date(iso).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); } catch { return ''; } }
+function fmtSize(n) { if (n < 1024) return n + ' Б'; if (n < 1048576) return (n / 1024).toFixed(n < 10240 ? 1 : 0).replace('.', ',') + ' КБ'; return (n / 1048576).toFixed(1).replace('.', ',') + ' МБ'; }
+const byteLen = s => te.encode(s || '').length;
+function stamp() { const d = new Date(), p = x => String(x).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}`; }
+function deviceName() { const u = navigator.userAgent; return /iPhone|iPad/.test(u) ? 'iPhone' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac/.test(u) ? 'Mac' : 'устройство'; }
+
+/* ===== шифрование ===== */
+function b64(buf) { const b = buf instanceof Uint8Array ? buf : new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function unb64(s) { const bin = atob(s); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+const b64url = u8 => b64(u8).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => unb64(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4));
+async function deriveKey(pass, salt, iterations) {
+  const base = await crypto.subtle.importKey('raw', te.encode(pass.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', hash:'SHA-256', salt, iterations}, base, {name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']);
+}
+async function pipeBytes(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
+async function seal(data) {
+  const json = te.encode(JSON.stringify(data));
+  let z = 'none', body = json;
+  if (typeof CompressionStream === 'function') { body = await pipeBytes(json, new CompressionStream('gzip')); z = 'gzip'; }
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv, additionalData:AAD}, S.key, body);
+  return {format:'seyf', v:1, kdf:{name:'PBKDF2', hash:'SHA-256', iterations:S.iter, salt:b64(S.salt)}, cipher:'AES-256-GCM', z, iv:b64(iv), ct:b64(ct), savedAt:nowIso()};
+}
+async function openWithKey(env, key) {
+  let plain = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(env.iv), additionalData:AAD}, key, unb64(env.ct)));
+  if (env.z === 'gzip') plain = await pipeBytes(plain, new DecompressionStream('gzip'));
+  return JSON.parse(td.decode(plain));
+}
+const envKey = (env, pass) => deriveKey(pass, unb64(env.kdf.salt), env.kdf.iterations);
+async function encTok(text) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv, additionalData:AAD_TOK}, S.key, te.encode(text)); return {s:b64(S.salt), i:S.iter, iv:b64(iv), ct:b64(ct)}; }
+async function decTok(o, key) { return td.decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(o.iv), additionalData:AAD_TOK}, key, unb64(o.ct))); }
+async function makeCheck() { const iv = crypto.getRandomValues(new Uint8Array(12)); S.check = {iv, ct: await crypto.subtle.encrypt({name:'AES-GCM', iv}, S.key, te.encode('seyf-ok'))}; }
+async function passMatches(pass) {
+  try { const k = await deriveKey(pass, S.salt, S.iter); await crypto.subtle.decrypt({name:'AES-GCM', iv:S.check.iv}, k, S.check.ct); return true; } catch { return false; }
+}
+
+/* ===== хранилище на устройстве ===== */
+const ls = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+function defaultRepo() { const h = location.hostname; return /\.github\.io$/i.test(h) ? h.split('.')[0] + '/seyf-data' : ''; }
+
+/* ===== GitHub ===== */
+class GhError extends Error { constructor(kind, status) { super(kind); this.kind = kind; this.status = status; } }
+async function gh(method, url, body) {
+  let r;
+  try {
+    r = await fetch('https://api.github.com' + url, {method, cache:'no-store', headers: Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + S.token, 'X-GitHub-Api-Version':'2022-11-28'}, body ? {'Content-Type':'application/json'} : {}), body: body ? JSON.stringify(body) : undefined});
+  } catch { throw new GhError('net'); }
+  return r;
+}
+const repoUrl = () => `/repos/${S.cfg.repo.split('/').map(encodeURIComponent).join('/')}`;
+const fileUrl = () => `${repoUrl()}/contents/${encodeURIComponent(S.cfg.path || VAULT_PATH)}`;
+async function ghCheckRepo() {
+  const r = await gh('GET', repoUrl());
+  if (r.status === 401) throw new GhError('auth', 401);
+  if (r.status === 403 || r.status === 404) throw new GhError('perm', r.status);
+  if (!r.ok) throw new GhError('http', r.status);
+}
+async function ghLoad() {
+  const r = await gh('GET', fileUrl());
+  if (r.status === 404) return {env:null, sha:null};
+  if (r.status === 401) throw new GhError('auth', 401);
+  if (r.status === 403) throw new GhError('perm', 403);
+  if (!r.ok) throw new GhError('http', r.status);
+  const j = await r.json();
+  let content = j.content;
+  if (!content || j.encoding !== 'base64') {
+    const rb = await gh('GET', `${repoUrl()}/git/blobs/${j.sha}`);
+    if (!rb.ok) throw new GhError('http', rb.status);
+    content = (await rb.json()).content;
+  }
+  return {env: JSON.parse(td.decode(unb64(content.replace(/\s/g, '')))), sha: j.sha};
+}
+async function ghSave(env, sha) {
+  const body = {message:`Сейф: сохранение (${deviceName()})`, content: b64(te.encode(JSON.stringify(env)))};
+  if (sha) body.sha = sha;
+  const r = await gh('PUT', fileUrl(), body);
+  if (r.status === 409 || r.status === 422) throw new GhError('conflict', r.status);
+  if (r.status === 401) throw new GhError('auth', 401);
+  if (r.status === 403 || r.status === 404) throw new GhError('perm', r.status);
+  if (!r.ok) throw new GhError('http', r.status);
+  return (await r.json()).content.sha;
+}
+function ghMessage(e) {
+  const repo = S.cfg ? S.cfg.repo : 'репозиторий';
+  switch (e && e.kind) {
+    case 'net': return 'Нет связи с GitHub. Проверьте интернет.';
+    case 'auth': return 'GitHub не принял ключ доступа: он неверный или у него закончился срок. Создайте новый и подключитесь заново.';
+    case 'perm': return `Ключ не даёт доступа к ${repo}. При создании ключа выберите этот репозиторий и право Contents: Read and write.`;
+    case 'conflict': return 'На другом устройстве сохранили более новую версию.';
+    case 'http': return `GitHub ответил ошибкой ${e.status}. Попробуйте ещё раз через минуту.`;
+    default: return 'Ошибка: ' + (e && e.message || e);
+  }
+}
+
+/* ===== данные ===== */
+function normalize(d) {
+  d = d && typeof d === 'object' ? d : {};
+  for (const k of ['projects', 'servers', 'secrets']) if (!Array.isArray(d[k])) d[k] = [];
+  d.settings = Object.assign({autolock:10}, d.settings || {});
+  d.meta = Object.assign({createdAt:nowIso()}, d.meta || {});
+  for (const p of d.projects) {
+    p.id ||= uid();
+    for (const k of ['name', 'about', 'folder', 'repo', 'stack', 'notes']) p[k] ??= '';
+    for (const k of ['domains', 'servers', 'envs', 'docs']) if (!Array.isArray(p[k])) p[k] = [];
+    for (const x of p.domains) { x.name ??= ''; x.note ??= ''; }
+    for (const e of p.envs) { e.id ||= uid(); e.name ??= '.env'; e.path ??= ''; e.content ??= ''; if (!Array.isArray(e.history)) e.history = []; }
+    for (const x of p.docs) { x.id ||= uid(); x.name ??= 'Документ.md'; x.path ??= ''; x.content ??= ''; }
+  }
+  for (const s of d.servers) { s.id ||= uid(); for (const k of ['name', 'address', 'provider', 'access', 'note']) s[k] ??= ''; }
+  for (const s of d.secrets) { s.id ||= uid(); for (const k of ['title', 'value', 'note', 'project']) s[k] ??= ''; }
+  return d;
+}
+const proj = id => S.data.projects.find(p => p.id === id);
+const srv = id => S.data.servers.find(s => s.id === id);
+const sec = id => S.data.secrets.find(s => s.id === id);
+const envOf = (pid, eid) => proj(pid)?.envs.find(e => e.id === eid);
+const docOf = (pid, did) => proj(pid)?.docs.find(x => x.id === did);
+
+function parseEnv(text) {
+  const out = [];
+  String(text || '').split(/\r?\n/).forEach((line, i) => {
+    const m = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s?(.*)$/);
+    if (!m) return;
+    let v = m[2].trim();
+    if (v.startsWith('"')) { const q = v.match(/^"((?:[^"\\]|\\.)*)"/); if (q) v = q[1].replace(/\\n/g, '\n').replace(/\\(["\\])/g, '$1'); }
+    else if (v.startsWith("'")) { const q = v.match(/^'([^']*)'/); if (q) v = q[1]; }
+    else v = v.replace(/\s+#.*$/, '');
+    out.push({k: m[1], v, line: i});
+  });
+  return out;
+}
+function upsertEnv(p, name, path, content, example) {
+  const ex = p.envs.find(e => e.path === path && e.name === name) || p.envs.find(e => e.path && e.path === path);
+  if (ex) {
+    if (ex.content === content) return 'same';
+    ex.history.unshift({content: ex.content, at: ex.updatedAt || nowIso()}); ex.history.length = Math.min(ex.history.length, 5);
+    ex.content = content; ex.updatedAt = nowIso(); return 'updated';
+  }
+  p.envs.push({id: uid(), name, path, content, updatedAt: nowIso(), history: [], example: !!example}); return 'added';
+}
+function upsertDoc(p, name, path, content) {
+  const ex = p.docs.find(x => x.path && x.path === path);
+  if (ex) { if (ex.content === content) return 'same'; ex.content = content; ex.updatedAt = nowIso(); return 'updated'; }
+  p.docs.push({id: uid(), name, path, content, updatedAt: nowIso()}); return 'added';
+}
+
+/* ===== сохранение: автоматически, в GitHub ===== */
+function touch() {
+  S.dirty = true; S.ver++; S.saveErr = '';
+  renderStatus();
+  clearTimeout(S.stashT); S.stashT = setTimeout(stash, 700);
+  clearTimeout(S.autoT); S.autoT = setTimeout(save, 2500);
+}
+async function stash() {   // копия несохранённого на устройстве — на случай, если вкладку закроют до отправки
+  if (!S.data || !S.dirty) return;
+  const ver = S.ver;
+  try { const env = await seal(S.data); if (S.dirty && S.ver === ver) ls.set(PENDING_KEY, {env, base: S.sha}); } catch {}
+}
+async function save() {
+  if (!S.data || !S.token) return;
+  if (S.saving) { S.again = true; return; }
+  clearTimeout(S.autoT);
+  if (!S.dirty) return;
+  S.saving = true; renderStatus();
+  const ver = S.ver; let env = null;
+  try {
+    S.data.meta.updatedAt = nowIso();
+    env = await seal(S.data);
+    const sha = await ghSave(env, S.sha);
+    S.sha = sha; S.offline = false; S.saveErr = '';
+    ls.set(CACHE_KEY, {env, sha});
+    if (S.ver === ver) { S.dirty = false; ls.del(PENDING_KEY); }
+  } catch (e) {
+    if (env) ls.set(PENDING_KEY, {env, base: S.sha});
+    if (e.kind === 'net') S.offline = true;
+    else if (e.kind === 'conflict') { S.saving = false; S.again = false; renderStatus(); conflictDialog(); return; }
+    else { S.saveErr = ghMessage(e); toast(S.saveErr, 7000); }
+  } finally { S.saving = false; renderStatus(); }
+  if (S.again) { S.again = false; save(); }
+  else if (S.dirty && !S.offline && !S.saveErr) { clearTimeout(S.autoT); S.autoT = setTimeout(save, 2500); }
+}
+async function syncRemote(force) {
+  if (!S.data || !S.token || S.dirty || S.saving) return;
+  if (!force && Date.now() - S.lastSync < 15000) return;
+  S.lastSync = Date.now();
+  let r;
+  try { r = await ghLoad(); S.offline = false; } catch (e) { if (e.kind === 'net') S.offline = true; renderStatus(); return; }
+  renderStatus();
+  if (!r.env || r.sha === S.sha || S.dirty || S.saving) return;
+  if (r.env.kdf.salt !== b64(S.salt)) { S.remote = r; ls.set(CACHE_KEY, r); lock('Мастер-пароль сменили на другом устройстве. Введите новый пароль.', true); return; }
+  try {
+    S.data = normalize(await openWithKey(r.env, S.key)); S.sha = r.sha; ls.set(CACHE_KEY, r);
+    renderSide(); renderMain(true); toast('Подтянуты изменения с другого устройства');
+  } catch {}
+}
+
+/* ===== markdown (безопасное подмножество) ===== */
+function inline(s) {
+  return String(s).split(/(`[^`]+`)/).map(part => {
+    if (/^`[^`]+`$/.test(part)) return '<code>' + esc(part.slice(1, -1)) + '</code>';
+    let t = esc(part);
+    t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    t = t.replace(/\[([^\]]+)\]\(([^)]*)\)/g, '$1');
+    return t;
+  }).join('');
+}
+function md(src) {
+  const L = String(src || '').replace(/\r\n?/g, '\n').split('\n');
+  const isTable = l => /^\s*\|.*\|\s*$/.test(l);
+  const isList = l => /^\s*([-*+]|\d+[.)])\s+/.test(l);
+  const isBlock = l => /^\s*(```|#{1,6}\s|>)/.test(l) || isList(l) || isTable(l);
+  let out = '', i = 0;
+  while (i < L.length) {
+    const l = L[i]; let m;
+    if (/^\s*```/.test(l)) { const buf = []; i++; while (i < L.length && !/^\s*```/.test(L[i])) buf.push(L[i++]); i++; out += `<pre><code>${esc(buf.join('\n'))}</code></pre>`; continue; }
+    if (/^\s*$/.test(l)) { i++; continue; }
+    if ((m = l.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/))) { const n = Math.min(6, m[1].length + 1); out += `<h${n}>${inline(m[2])}</h${n}>`; i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) { out += '<hr>'; i++; continue; }
+    if (isTable(l) && i + 1 < L.length && /^\s*\|?\s*:?-{2,}/.test(L[i + 1])) {
+      const row = s => s.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+      const head = row(l); i += 2; const body = [];
+      while (i < L.length && isTable(L[i])) body.push(row(L[i++]));
+      out += `<div class="md-table"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${body.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      continue;
+    }
+    if (/^\s*>/.test(l)) { const buf = []; while (i < L.length && /^\s*>/.test(L[i])) buf.push(L[i++].replace(/^\s*>\s?/, '')); out += `<blockquote>${md(buf.join('\n'))}</blockquote>`; continue; }
+    if (isList(l)) {
+      const ordered = /^\s*\d/.test(l), items = [];
+      while (i < L.length && (isList(L[i]) || (items.length && /^\s{2,}\S/.test(L[i])))) {
+        if (isList(L[i])) items.push(L[i].replace(/^\s*([-*+]|\d+[.)])\s+/, '')); else items[items.length - 1] += ' ' + L[i].trim();
+        i++;
+      }
+      const tag = ordered ? 'ol' : 'ul';
+      out += `<${tag}>${items.map(t => `<li>${inline(t.replace(/^\[( |x|X)\]\s*/, (_, c) => c.trim() ? '☑ ' : '☐ '))}</li>`).join('')}</${tag}>`;
+      continue;
+    }
+    const buf = [];
+    while (i < L.length && !/^\s*$/.test(L[i]) && !isBlock(L[i])) buf.push(L[i++]);
+    if (!buf.length) buf.push(L[i++]);
+    out += `<p>${buf.map(inline).join(' ')}</p>`;
+  }
+  return out;
+}
+
+/* ===== уведомления, буфер обмена, файлы ===== */
+let toastTimer;
+function toast(msg, ms = 3200) { const t = $('#toast'); if (!t) return; t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), ms); }
+async function copy(text, label = 'Скопировано') {
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  toast(label);
+}
+function autosize(t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+function download(text, name, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], {type}));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+}
+function pickFile(accept) {
+  return new Promise(res => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = accept; inp.onchange = () => res(inp.files[0] || null); inp.click(); });
+}
+function envelopeFromText(text) {   // .json копии или старый Сейф.html
+  const t = text.trim();
+  if (t.startsWith('{')) { try { const e = JSON.parse(t); return e && e.format === 'seyf' ? e : null; } catch { return null; } }
+  const mark = 'id="vault-' + 'data">', i = text.indexOf(mark); if (i < 0) return null;
+  const start = i + mark.length, end = text.indexOf('</scr' + 'ipt>', start); if (end < 0) return null;
+  try { const e = JSON.parse(text.slice(start, end)); return e && e.format === 'seyf' ? e : null; } catch { return null; }
+}
+
+/* ===== замок и подключение ===== */
+function dialSvg() {
+  const P = (r, deg) => { const a = deg * Math.PI / 180; return [(Math.sin(a) * r).toFixed(2), (-Math.cos(a) * r).toFixed(2)]; };
+  let ticks = '', nums = '', grip = '';
+  for (let i = 0; i < 100; i++) { const long = i % 10 === 0, mid = i % 5 === 0; const [x1, y1] = P(80, i * 3.6), [x2, y2] = P(long ? 69 : mid ? 72.5 : 75.5, i * 3.6); ticks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${long ? 1.7 : .9}"/>`; }
+  for (let i = 0; i < 100; i += 10) { const [x, y] = P(59, i * 3.6); nums += `<text x="${x}" y="${(+y + 3.3).toFixed(2)}">${i}</text>`; }
+  for (let i = 0; i < 40; i++) { const [x1, y1] = P(28.5, i * 9), [x2, y2] = P(33.5, i * 9); grip += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; }
+  return `<svg class="dial" id="dial" viewBox="-100 -100 200 200" aria-hidden="true">
+    <defs>
+      <linearGradient id="dg-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1D898"/><stop offset=".45" stop-color="#C79E4B"/><stop offset="1" stop-color="#7E5C20"/></linearGradient>
+      <radialGradient id="dg-face" cx=".5" cy=".38" r=".62"><stop offset="0" stop-color="#2F574A"/><stop offset="1" stop-color="#15291F"/></radialGradient>
+    </defs>
+    <circle r="98" fill="url(#dg-brass)"/>
+    <circle r="91.5" fill="#132A22"/>
+    <g class="face" id="dial-face" style="transform:rotate(0deg)">
+      <circle r="86" fill="url(#dg-face)"/>
+      <g stroke="#DCC58F" stroke-linecap="round">${ticks}</g>
+      <g fill="#DCC58F" font-size="9.5" text-anchor="middle" font-family="Bahnschrift, 'Segoe UI', Roboto, sans-serif">${nums}</g>
+      <circle r="35" fill="url(#dg-brass)"/>
+      <g stroke="rgba(70,46,10,.5)" stroke-width="1.7">${grip}</g>
+      <circle r="19" fill="url(#dg-brass)" stroke="rgba(70,46,10,.35)"/>
+    </g>
+    <path d="M0 -82 L-6.5 -96 L6.5 -96 Z" fill="#EAD9B1" stroke="#132A22" stroke-width="1.2"/>
+  </svg>`;
+}
+function spinDial(by) {
+  const f = $('#dial-face'); if (!f) return;
+  S.dial += by ?? (Math.random() < .5 ? -1 : 1) * (18 + Math.random() * 42);
+  f.style.transform = `rotate(${S.dial.toFixed(1)}deg)`;
+}
+function showSetup(note) {
+  S.lockMode = 'setup'; S.dial = 0; S.token = null; S.remote = undefined;
+  $('#app').innerHTML = `
+  <div class="lock" id="lock"><div class="door">
+    ${dialSvg()}
+    <h1 class="lock-title">Сейф</h1>
+    <p class="lock-sub">${esc(note || 'Подключите это устройство к хранилищу на GitHub. Это нужно один раз.')}</p>
+    <form class="lock-form" id="setup-form" autocomplete="off" novalidate>
+      <label class="sr" for="repo">Репозиторий</label>
+      <input id="repo" value="${esc((S.cfg && S.cfg.repo) || defaultRepo())}" placeholder="владелец/репозиторий" spellcheck="false" autocapitalize="off">
+      <label class="sr" for="tok">Ключ доступа GitHub</label>
+      <input id="tok" type="password" placeholder="Ключ доступа GitHub" spellcheck="false" autocapitalize="off" autocomplete="off">
+      <p class="lock-hint" id="lock-hint" aria-live="polite"></p>
+      <button class="lock-btn" id="lock-btn" type="submit">Подключить</button>
+    </form>
+    <p class="lock-foot">На телефоне проще: откройте сейф на компьютере, нажмите «Ещё», затем «Подключить телефон», и откройте полученную ссылку здесь.</p>
+  </div></div>`;
+  setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) $('#tok')?.focus(); }, 40);
+}
+function showLock(mode, note) {
+  S.lockMode = mode; S.dial = 0;
+  const repo = S.cfg ? S.cfg.repo : '';
+  const sub = mode === 'create'
+    ? 'Хранилище пустое. Придумайте мастер-пароль: им зашифруется всё, что вы сюда положите.'
+    : (note || 'Введите мастер-пароль.');
+  $('#app').innerHTML = `
+  <div class="lock" id="lock"><div class="door">
+    ${dialSvg()}
+    <h1 class="lock-title">Сейф</h1>
+    <p class="lock-sub">${esc(sub)}</p>
+    <form class="lock-form" id="lock-form" autocomplete="off" novalidate>
+      <label class="sr" for="pw">Мастер-пароль</label>
+      <input id="pw" type="password" autocomplete="${mode === 'create' ? 'new-password' : 'current-password'}" placeholder="Мастер-пароль" spellcheck="false">
+      ${mode === 'create' ? `<label class="sr" for="pw2">Пароль ещё раз</label><input id="pw2" type="password" autocomplete="new-password" placeholder="Ещё раз, для проверки" spellcheck="false">
+      <div class="lock-file"><span id="imp-name">${S.importEnv ? esc(S.importEnv._name) : 'Начать с пустого сейфа'}</span><button type="button" data-act="pick-import">${S.importEnv ? 'Другой файл' : 'Взять из файла'}</button></div>` : ''}
+      <p class="lock-hint" id="lock-hint" aria-live="polite"></p>
+      <button class="lock-btn" id="lock-btn" type="submit">${mode === 'create' ? 'Создать сейф' : 'Открыть'}</button>
+    </form>
+    <p class="lock-foot">${mode === 'create' ? 'Пароль нигде не хранится. Если его забыть, открыть сейф не сможет никто. Если берёте данные из старого Сейф.html, введите пароль от него.' : 'Хранилище: ' + esc(repo)}</p>
+    ${mode === 'open' ? '<button class="lock-link" type="button" data-act="reconnect">Подключиться заново</button>' : ''}
+  </div></div>`;
+  setTimeout(() => { if (!document.activeElement || document.activeElement === document.body) $('#pw')?.focus(); }, 40);
+}
+function lockFail(msg, shake) {
+  const h = $('#lock-hint'); if (h) { h.textContent = msg; h.className = 'lock-hint'; }
+  if (shake) { const d = $('#dial'); if (d) { d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); } }
+}
+function busy(on, label) { const b = $('#lock-btn'); if (!b) return; if (on) { b.dataset.label = b.textContent; b.textContent = label; b.disabled = true; } else { b.textContent = b.dataset.label || b.textContent; b.disabled = false; } }
+async function onSetupSubmit() {
+  const repo = $('#repo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+  const token = $('#tok').value.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return lockFail('Укажите репозиторий в виде владелец/название.');
+  if (token.length < 20) return lockFail('Вставьте ключ доступа целиком.');
+  if (!window.crypto || !crypto.subtle) return lockFail('Браузер не даёт шифровать на этой странице. Откройте её в Chrome, Safari или Edge.');
+  busy(true, 'Проверяю…');
+  S.cfg = {repo, path: VAULT_PATH}; S.token = token;
+  try { await ghCheckRepo(); S.remote = await ghLoad(); }
+  catch (e) { busy(false); S.token = null; return lockFail(ghMessage(e)); }
+  busy(false);
+  if (S.remote.env) showLock('open', 'Хранилище найдено. Введите мастер-пароль сейфа.');
+  else showLock('create');
+  // ключ пока только в памяти: на устройство он запишется зашифрованным после ввода пароля
+}
+async function onLockSubmit() {
+  const pw = $('#pw').value, pw2 = $('#pw2')?.value;
+  if (!window.crypto || !crypto.subtle) return lockFail('Браузер не даёт шифровать на этой странице. Откройте её в Chrome, Safari или Edge.');
+  if (S.lockMode === 'create') {
+    if (pw.length < 8) return lockFail('Нужно хотя бы 8 символов. Удобнее всего фраза из трёх-четырёх слов.');
+    if (pw !== pw2) return lockFail('Пароли не совпадают.');
+  } else if (!pw) return lockFail('Введите пароль.');
+  busy(true, S.lockMode === 'create' ? 'Шифрую…' : 'Проверяю…');
+  $('#lock-hint').textContent = '';
+  try {
+    if (S.lockMode === 'create') await createVault(pw); else await openVault(pw);
+    await makeCheck();
+    openDoor();
+    if (S.dirty) save();
+  } catch (e) {
+    busy(false);
+    if (e && e.message === 'bad-pass') { lockFail('Пароль не подошёл. Проверьте раскладку клавиатуры и Caps Lock.', true); $('#pw').select(); }
+    else if (e && e.message === 'bad-pass-data') { lockFail('Пароль не подошёл к данным. Если пароль меняли на другом устройстве, введите новый.', true); $('#pw').select(); }
+    else if (e && e.message === 'bad-import') lockFail('Пароль не подходит к выбранному файлу. Введите пароль от него или начните с пустого сейфа.', true);
+    else if (e && e.message === 'empty') showLock('create');
+    else if (e instanceof GhError) lockFail(ghMessage(e));
+    else lockFail('Не удалось открыть: ' + (e && e.message || e));
+  }
+}
+async function openVault(pw) {
+  // 1. ключ GitHub с этого устройства
+  let tokKey = null;
+  if (!S.token) {
+    if (!S.cfg || !S.cfg.tok) throw new Error('no-token');
+    tokKey = {s: S.cfg.tok.s, key: await deriveKey(pw, unb64(S.cfg.tok.s), S.cfg.tok.i)};
+    try { S.token = await decTok(S.cfg.tok, tokKey.key); } catch { throw new Error('bad-pass'); }
+  }
+  // 2. свежая версия из репозитория (или копия с устройства, если нет связи)
+  if (S.remote === undefined) {
+    try { S.remote = await ghLoad(); S.offline = false; }
+    catch (e) { if (e.kind === 'net') { S.offline = true; S.remote = ls.get(CACHE_KEY); } else throw e; }
+  }
+  const pend = ls.get(PENDING_KEY);
+  const env = (pend && pend.env) || (S.remote && S.remote.env);
+  if (!env) throw new Error('empty');
+  // 3. ключ данных
+  const key = tokKey && tokKey.s === env.kdf.salt ? tokKey.key : await envKey(env, pw);
+  let data; try { data = await openWithKey(env, key); } catch { throw new Error(tokKey ? 'bad-pass-data' : 'bad-pass'); }
+  S.key = key; S.salt = unb64(env.kdf.salt); S.iter = env.kdf.iterations;
+  S.data = normalize(data);
+  S.sha = pend ? pend.base : (S.remote && S.remote.sha) || null;
+  S.dirty = !!pend; S.ver++;
+  if (S.remote && S.remote.env && !S.offline) ls.set(CACHE_KEY, S.remote);
+  S.remote = undefined;
+  // 4. ключ GitHub — на устройство, зашифрованным текущим паролем
+  if (!S.cfg.tok || S.cfg.tok.s !== b64(S.salt)) { S.cfg.tok = await encTok(S.token); ls.set(CFG_KEY, S.cfg); }
+  else ls.set(CFG_KEY, S.cfg);
+}
+async function createVault(pw) {
+  let data = {};
+  if (S.importEnv) {
+    if (S.importEnv.ct) { try { data = await openWithKey(S.importEnv, await envKey(S.importEnv, pw)); } catch { throw new Error('bad-import'); } }
+    else data = S.importEnv.seed || {};
+  }
+  S.salt = crypto.getRandomValues(new Uint8Array(16)); S.iter = ITER;
+  S.key = await deriveKey(pw, S.salt, ITER);
+  S.data = normalize(structuredClone(data));
+  S.data.meta.createdAt = S.data.meta.createdAt || nowIso();
+  S.sha = null; S.dirty = true; S.ver++; S.importEnv = null; S.remote = undefined;
+  S.cfg.tok = await encTok(S.token); ls.set(CFG_KEY, S.cfg);
+}
+function openDoor() {
+  const lockEl = $('#lock');
+  S.lastAct = Date.now(); S.lastSync = Date.now();
+  mountShell(); render();
+  if (!lockEl || REDUCED) return;
+  $('#app').appendChild(lockEl);
+  void lockEl.offsetWidth;
+  document.body.classList.add('opening');
+  lockEl.classList.add('opening');
+  spinDial(S.dial > 0 ? 540 : -540);
+  setTimeout(() => { lockEl.remove(); document.body.classList.remove('opening'); }, 1450);
+}
+async function lock(note, keepToken) {
+  if (!S.data) return;
+  closeDialogs(); clearTimeout(S.autoT); clearTimeout(S.stashT);
+  const hadChanges = S.dirty;
+  if (S.dirty) { try { ls.set(PENDING_KEY, {env: await seal(S.data), base: S.sha}); } catch {} }
+  S.data = null; S.key = null; S.check = null; S.dirty = false;
+  if (!keepToken) { S.token = null; S.remote = undefined; }
+  S.reveal.clear(); S.editEnv.clear(); S.envSnap = {}; S.editDoc = null; S.query = '';
+  showLock('open', note || (hadChanges ? 'Сейф заперт. Несохранённые изменения на месте: после открытия они уйдут в GitHub.' : null));
+}
+
+/* ===== каркас ===== */
+function mountShell() {
+  $('#app').innerHTML = `
+  <div class="shell" id="shell">
+    <aside class="side" id="side">
+      <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none"/><path d="M12 2v4.5"/></svg><span>Сейф</span></div>
+      <nav class="nav" id="nav" aria-label="Разделы"></nav>
+      <div class="side-foot">
+        ${HAS_DIR ? '<button class="side-btn" type="button" data-act="import">Загрузить из папки…</button>' : ''}
+        <button class="side-btn" type="button" data-act="connect">Подключить телефон</button>
+        <p class="side-note">Всё зашифровано мастер-паролем и хранится в ${esc(S.cfg.repo)}. Сохраняется само.</p>
+      </div>
+    </aside>
+    <div class="scrim" data-act="close-side"></div>
+    <header class="top">
+      <button class="ib only-narrow" type="button" data-act="toggle-side" aria-label="Разделы">${I('menu')}</button>
+      <label class="search"><span class="sr">Поиск</span><input id="q" type="search" placeholder="Найти проект, домен, ключ…" autocomplete="off" spellcheck="false"></label>
+      <span class="status" id="status" aria-live="polite"></span>
+      <button class="btn quiet" type="button" data-act="lock" title="Запереть сейф">${I('lock')}<span class="hide-narrow">Запереть</span></button>
+      <div class="more">
+        <button class="btn quiet" type="button" data-act="menu" aria-haspopup="true" aria-expanded="false" id="menu-btn">Ещё</button>
+        <div class="menu" id="menu" hidden>
+          <button type="button" data-act="connect">Подключить телефон или другой компьютер</button>
+          <button type="button" data-act="save">Сохранить сейчас</button>
+          <hr>
+          <button type="button" data-act="backup">Скачать резервную копию</button>
+          <button type="button" data-act="restore">Восстановить из копии…</button>
+          <hr>
+          <button type="button" data-act="change-pass">Сменить мастер-пароль</button>
+          <label class="menu-row">Запирать без действий через
+            <select id="autolock" data-change="autolock">
+              <option value="5">5 мин</option><option value="10">10 мин</option><option value="15">15 мин</option><option value="30">30 мин</option><option value="60">1 час</option><option value="0">никогда</option>
+            </select>
+          </label>
+          <hr>
+          <button type="button" data-act="about">Как устроен Сейф</button>
+          <button type="button" class="danger" data-act="forget">Отключить это устройство</button>
+        </div>
+      </div>
+    </header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <input type="file" id="file-in" multiple hidden>`;
+}
+function route() { const parts = location.hash.replace(/^#\/?/, '').split('/').map(s => { try { return decodeURIComponent(s); } catch { return s; } }); return {a: parts[0] || '', b: parts[1], c: parts[2]}; }
+function go(href) { S.query = ''; const q = $('#q'); if (q) q.value = ''; closeSide(); if (location.hash === href || (href === '#/' && !location.hash)) { renderMain(); renderSide(); } else location.hash = href; }
+function render() { if (!S.data) return; if (!$('#shell')) mountShell(); renderSide(); renderStatus(); renderMain(); }
+function renderStatus() {
+  const st = $('#status'); if (!st) return;
+  let cls = 'is-clean', txt = 'Сохранено', tip = 'Всё записано в GitHub';
+  if (S.saving) { cls = 'is-saving'; txt = 'Сохраняю…'; tip = 'Отправляю изменения в GitHub'; }
+  else if (S.dirty && S.offline) { cls = 'is-off'; txt = 'Нет связи'; tip = 'Изменения лежат на этом устройстве и уйдут в GitHub, когда появится интернет'; }
+  else if (S.dirty && S.saveErr) { cls = 'is-err'; txt = 'Не сохранено'; tip = S.saveErr; }
+  else if (S.dirty) { cls = 'is-dirty'; txt = 'Не сохранено'; tip = 'Сохранится через пару секунд'; }
+  else if (S.offline) { cls = 'is-off'; txt = 'Нет связи'; tip = 'Открыта копия с этого устройства'; }
+  st.className = 'status ' + cls; st.textContent = txt; st.title = tip;
+}
+function renderSide() {
+  const nav = $('#nav'); if (!nav) return;
+  const r = route(), d = S.data;
+  const cur = on => on ? ' aria-current="page"' : '';
+  const domN = d.projects.reduce((n, p) => n + p.domains.filter(x => x.name.trim()).length, 0);
+  nav.innerHTML = `
+    <a href="#/"${cur(!r.a)}><span class="nm">Все проекты</span></a>
+    <a href="#/domains"${cur(r.a === 'domains')}><span class="nm">Домены</span><span class="count">${domN}</span></a>
+    <a href="#/servers"${cur(r.a === 'servers')}><span class="nm">Серверы</span><span class="count">${d.servers.length}</span></a>
+    <a href="#/secrets"${cur(r.a === 'secrets')}><span class="nm">Ключи и пароли</span><span class="count">${d.secrets.length}</span></a>
+    <p class="nav-label">Проекты</p>
+    ${d.projects.map(p => `<a href="#/p/${p.id}"${cur((r.a === 'p' || r.a === 'd') && r.b === p.id)}><span class="nm">${esc(p.name || 'Без названия')}</span>${p.envs.length ? `<span class="count" title="Файлов .env: ${p.envs.length}">${I('key')}${p.envs.length}</span>` : ''}</a>`).join('')}
+    <button class="add" type="button" data-act="add-project">${I('plus')}Добавить проект</button>`;
+}
+function focusKey(el) {
+  if (!el || !el.closest || !el.closest('#main')) return null;
+  if (el.dataset.bind) return `[data-bind="${CSS.escape(el.dataset.bind)}"]`;
+  if (el.dataset.act) return ['act', 'r', 'p', 'e', 'l', 'i', 'k', 's'].filter(a => el.dataset[a] !== undefined).map(a => `[data-${a}="${CSS.escape(el.dataset[a])}"]`).join('');
+  return null;
+}
+function renderMain(keep) {
+  const m = $('#main'); if (!m || !S.data) return;
+  const fk = keep ? focusKey(document.activeElement) : null, y = scrollY;
+  const r = route(); let html;
+  if (S.query.trim()) html = viewSearch(S.query.trim());
+  else if (r.a === 'p' && proj(r.b)) html = viewProject(proj(r.b));
+  else if (r.a === 'd' && docOf(r.b, r.c)) html = viewDoc(proj(r.b), docOf(r.b, r.c));
+  else if (r.a === 'domains') html = viewDomains();
+  else if (r.a === 'servers') html = viewServers();
+  else if (r.a === 'secrets') html = viewSecrets();
+  else html = viewHome();
+  m.innerHTML = html;
+  $$('textarea.auto', m).forEach(autosize);
+  if (keep) { scrollTo(0, y); if (fk) { const el = $(fk, m); if (el) el.focus({preventScroll: true}); } }
+}
+
+/* ===== экраны ===== */
+function viewHome() {
+  const d = S.data;
+  const envN = d.projects.reduce((n, p) => n + p.envs.length, 0);
+  const domN = d.projects.reduce((n, p) => n + p.domains.filter(x => x.name.trim()).length, 0);
+  const rows = d.projects.map(p => {
+    const doms = p.domains.filter(x => x.name.trim());
+    const srvs = p.servers.map(srv).filter(Boolean);
+    return `<tr data-act="go" data-href="#/p/${p.id}" tabindex="0">
+      <td><strong>${esc(p.name || 'Без названия')}</strong>${p.about ? `<span class="sub">${esc(p.about)}</span>` : ''}</td>
+      <td>${doms.length ? doms.map(x => esc(x.name)).join('<br>') : '<span class="none">нет</span>'}</td>
+      <td class="col-srv">${srvs.length ? srvs.map(s => `<span class="mono">${esc(s.address || s.name)}</span>`).join('<br>') : '<span class="none">не указан</span>'}</td>
+      <td class="num">${p.envs.length || '<span class="none">0</span>'}</td>
+      <td class="num">${p.docs.length || '<span class="none">0</span>'}</td></tr>`;
+  }).join('');
+  const callout = envN ? '' : HAS_DIR
+    ? `<div class="callout"><div><h2>Загрузите секреты</h2><p>Нажмите «Загрузить из папки» и выберите папку с проектами. Сейф сам найдёт файлы .env и документы, разложит их по проектам и покажет список перед загрузкой.</p></div><button class="btn primary" type="button" data-act="import">Загрузить из папки</button></div>`
+    : `<div class="callout"><div><h2>Загрузите секреты</h2><p>Удобнее всего с компьютера: там есть «Загрузить из папки». С телефона файлы добавляются на странице проекта.</p></div></div>`;
+  return `<div class="view-head"><h1 class="h1">Все проекты</h1>
+    <p class="lede">${nw(d.projects.length, 'проект', 'проекта', 'проектов')}, ${nw(domN, 'домен', 'домена', 'доменов')}, ${nw(d.servers.length, 'сервер', 'сервера', 'серверов')}, ${nw(envN, 'файл', 'файла', 'файлов')} .env.</p></div>
+    ${callout}
+    ${d.projects.length ? `<div class="table-wrap"><table class="ledger"><thead><tr><th>Проект</th><th>Домены</th><th class="col-srv">Сервер</th><th class="num">.env</th><th class="num">Документы</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="empty">Проектов пока нет.</p>'}
+    <p style="margin-top:16px"><button class="btn" type="button" data-act="add-project">${I('plus')}Добавить проект</button></p>`;
+}
+function viewProject(p) {
+  const srvs = p.servers.map(srv).filter(Boolean);
+  const free = S.data.servers.filter(s => !p.servers.includes(s.id));
+  const keys = S.data.secrets.filter(k => k.project === p.id);
+  const docs = [...p.docs].sort((a, b) => (a.path || a.name).localeCompare(b.path || b.name));
+  return `
+  <div class="view-head">
+    <input class="title-input" data-bind="p.${p.id}.name" value="${esc(p.name)}" placeholder="Название проекта" aria-label="Название проекта">
+    <textarea class="about auto" rows="1" data-bind="p.${p.id}.about" placeholder="Что это за проект, в двух словах" aria-label="Описание проекта">${esc(p.about)}</textarea>
+    <dl class="facts">
+      <dt>Папка</dt><dd class="with-act"><input class="field mono" data-bind="p.${p.id}.folder" value="${esc(p.folder)}" placeholder="C:\\Dev\\…" aria-label="Папка">${ib('copy', 'Копировать путь', 'data-act="copy-input"')}</dd>
+      <dt>Репозиторий</dt><dd class="with-act"><input class="field" data-bind="p.${p.id}.repo" value="${esc(p.repo)}" placeholder="https://github.com/…" aria-label="Репозиторий">${ib('ext', 'Открыть репозиторий', 'data-act="open-input"')}</dd>
+      <dt>Стек</dt><dd><input class="field" data-bind="p.${p.id}.stack" value="${esc(p.stack)}" placeholder="На чём написан" aria-label="Стек"></dd>
+    </dl>
+  </div>
+  <section class="block">
+    <div class="block-head"><h2>Домены</h2><button class="btn quiet" type="button" data-act="add-domain" data-p="${p.id}">${I('plus')}Добавить домен</button></div>
+    ${p.domains.length ? `<div class="rows">${p.domains.map((x, i) => `
+      <div class="row">
+        <input class="field strong" data-bind="pd.${p.id}.${i}.name" value="${esc(x.name)}" placeholder="example.ru" aria-label="Домен" spellcheck="false" autocapitalize="off">
+        <input class="field" data-bind="pd.${p.id}.${i}.note" value="${esc(x.note)}" placeholder="Заметка: что на нём, куда смотрит" aria-label="Заметка к домену">
+        <span class="row-acts">${ib('ext', 'Открыть сайт', `data-act="open-domain" data-p="${p.id}" data-i="${i}"`)}${ib('trash', 'Убрать домен', `data-act="del-domain" data-p="${p.id}" data-i="${i}"`)}</span>
+      </div>`).join('')}</div>` : '<p class="empty">Доменов нет.</p>'}
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>Серверы</h2>${free.length ? `<select class="btn" data-change="link-server" data-p="${p.id}" aria-label="Привязать сервер"><option value="">Привязать сервер…</option>${free.map(s => `<option value="${s.id}">${esc(s.name || s.address)}</option>`).join('')}</select>` : ''}</div>
+    ${srvs.length ? `<div class="chips">${srvs.map(s => `<span class="chip"><a href="#/servers">${esc(s.name || 'Сервер')}</a><span class="mono">${esc(s.address)}</span>${ib('x', 'Отвязать сервер', `data-act="unlink-server" data-p="${p.id}" data-s="${s.id}"`)}</span>`).join('')}</div>`
+      : `<p class="empty">Сервер не указан. ${S.data.servers.length ? 'Выберите его в списке справа.' : 'Заведите его в разделе «Серверы».'}</p>`}
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>Файлы .env</h2><div class="head-acts">
+      <button class="btn quiet" type="button" data-act="add-files" data-p="${p.id}">${I('plus')}Добавить файлы</button>
+      <button class="btn quiet" type="button" data-act="paste-env" data-p="${p.id}">Вставить текстом</button></div></div>
+    ${p.envs.length ? p.envs.map(e => envBlock(p, e)).join('') : `<p class="dropzone">Файлов .env пока нет. ${HAS_DIR ? 'Перетащите их сюда или загрузите всё сразу кнопкой «Загрузить из папки».' : 'Добавьте файл или вставьте его текстом.'}</p>`}
+    ${keys.length ? `<h3 class="h3">Ключи и пароли проекта</h3>${keys.map(secretRow).join('')}` : ''}
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>Документы</h2><button class="btn quiet" type="button" data-act="new-doc" data-p="${p.id}">${I('plus')}Новый документ</button></div>
+    ${docs.length ? `<ul class="docs">${docs.map(x => `<li><a href="#/d/${p.id}/${x.id}">${esc(x.name)}</a><span class="doc-meta">${x.path && x.path !== x.name ? esc(x.path) + ', ' : ''}${fmtSize(byteLen(x.content))}</span></li>`).join('')}</ul>`
+      : '<p class="empty">Документов нет. README и другие файлы .md подтянутся при загрузке из папки.</p>'}
+  </section>
+  <section class="block">
+    <div class="block-head"><h2>Заметки</h2></div>
+    <textarea class="notes auto" data-bind="p.${p.id}.notes" placeholder="Как обновлять, что важно не забыть, кому писать" aria-label="Заметки">${esc(p.notes)}</textarea>
+  </section>
+  <div class="danger-zone"><button class="btn danger quiet" type="button" data-act="del-project" data-p="${p.id}">${I('trash')}Удалить проект</button></div>`;
+}
+function envBlock(p, e) {
+  const kv = parseEnv(e.content), editing = S.editEnv.has(e.id);
+  const allShown = kv.length > 0 && kv.every(x => S.reveal.has(`e:${e.id}:${x.line}`));
+  const meta = [e.path && e.path !== e.name ? esc(e.path) : '', nw(kv.length, 'ключ', 'ключа', 'ключей'), e.updatedAt ? 'обновлён ' + fmtDay(e.updatedAt) : '', e.example ? 'пример без секретов' : ''].filter(Boolean).join(', ');
+  const A = `data-p="${p.id}" data-e="${e.id}"`;
+  return `<article class="env${e.example ? ' is-example' : ''}">
+    <header class="env-head">
+      <span class="env-file">${esc(e.name || '.env')}</span><span class="env-meta">${meta}</span>
+      <span class="env-actions">${editing ? `<button class="btn primary sm" type="button" data-act="done-env" ${A}>Готово</button>` : `
+        ${kv.length ? ib(allShown ? 'eyeOff' : 'eye', allShown ? 'Скрыть значения' : 'Показать все значения', `data-act="reveal-all" ${A}`) : ''}
+        ${ib('copy', 'Копировать файл целиком', `data-act="copy-env" ${A}`)}
+        ${ib('download', 'Скачать файл', `data-act="dl-env" ${A}`)}
+        ${ib('edit', 'Изменить', `data-act="edit-env" ${A}`)}
+        ${e.history.length ? ib('history', `Прошлые версии: ${e.history.length}`, `data-act="hist-env" ${A}`) : ''}
+        ${ib('trash', 'Удалить файл', `data-act="del-env" ${A}`)}`}</span>
+    </header>
+    ${editing ? `<textarea class="code-edit auto" spellcheck="false" autocapitalize="off" data-bind="e.${p.id}.${e.id}.content" aria-label="Содержимое ${esc(e.name)}" placeholder="КЛЮЧ=значение">${esc(e.content)}</textarea>
+      <div class="env-rename"><label>Имя файла <input class="field" data-bind="e.${p.id}.${e.id}.name" value="${esc(e.name)}" spellcheck="false" autocapitalize="off"></label><label>Путь в проекте <input class="field" data-bind="e.${p.id}.${e.id}.path" value="${esc(e.path)}" placeholder="backend/.env" spellcheck="false" autocapitalize="off"></label></div>`
+    : kv.length ? `<table class="kv"><tbody>${kv.map(x => {
+        const id = `e:${e.id}:${x.line}`, shown = S.reveal.has(id);
+        return `<tr><th scope="row">${esc(x.k)}</th><td>${shown ? `<span class="val">${x.v ? esc(x.v) : '<span class="none">пусто</span>'}</span>` : `<span class="val masked">${x.v ? '••••••••' : '<span class="none">пусто</span>'}</span>`}</td>
+          <td class="acts">${x.v ? ib(shown ? 'eyeOff' : 'eye', shown ? 'Скрыть' : 'Показать', `data-act="reveal" data-r="${id}"`) + ib('copy', `Копировать ${x.k}`, `data-act="copy-val" ${A} data-l="${x.line}"`) : ''}</td></tr>`;
+      }).join('')}</tbody></table>` : '<p class="empty pad">В файле нет строк вида КЛЮЧ=значение.</p>'}
+  </article>`;
+}
+function secretRow(k) {
+  const shown = S.reveal.has('k:' + k.id);
+  return `<div class="secret">
+    <input class="field strong" data-bind="k.${k.id}.title" value="${esc(k.title)}" placeholder="Что это" aria-label="Название">
+    <div class="with-act">${shown ? `<textarea class="field mono auto" rows="1" data-bind="k.${k.id}.value" placeholder="Значение" aria-label="Значение" spellcheck="false" autocapitalize="off">${esc(k.value)}</textarea>`
+      : `<span class="val masked" style="flex:1">${k.value ? '••••••••' : '<span class="none">пусто</span>'}</span>`}
+      ${ib(shown ? 'eyeOff' : 'eye', shown ? 'Скрыть' : 'Показать и изменить', `data-act="reveal" data-r="k:${k.id}"`)}${k.value ? ib('copy', 'Копировать значение', `data-act="copy-secret" data-k="${k.id}"`) : ''}</div>
+    <select class="field" data-bind="k.${k.id}.project" aria-label="Проект"><option value="">Без проекта</option>${S.data.projects.map(p => `<option value="${p.id}"${p.id === k.project ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
+    <input class="field" data-bind="k.${k.id}.note" value="${esc(k.note)}" placeholder="Заметка" aria-label="Заметка">
+    ${ib('trash', 'Удалить запись', `data-act="del-secret" data-k="${k.id}"`)}
+  </div>`;
+}
+function viewSecrets() {
+  const list = S.data.secrets;
+  return `<div class="view-head"><h1 class="h1">Ключи и пароли</h1><p class="lede">Всё, что не лежит в .env: токены GitHub, пароль от регистратора доменов, доступы к почте и хостингу.</p></div>
+    ${list.length ? `<div class="secret-head"><span>Название</span><span>Значение</span><span>Проект</span><span>Заметка</span><span></span></div>${list.map(secretRow).join('')}` : '<p class="empty">Записей пока нет.</p>'}
+    <p style="margin-top:16px"><button class="btn" type="button" data-act="add-secret">${I('plus')}Добавить запись</button></p>`;
+}
+function viewServers() {
+  const list = S.data.servers;
+  return `<div class="view-head"><h1 class="h1">Серверы</h1><p class="lede">Адреса, доступы и что на каком сервере работает.</p></div>
+    ${list.map(s => {
+      const used = S.data.projects.filter(p => p.servers.includes(s.id)), shown = S.reveal.has('s:' + s.id);
+      return `<article class="srv">
+        <input class="title-input small" data-bind="s.${s.id}.name" value="${esc(s.name)}" placeholder="Название сервера" aria-label="Название сервера">
+        <dl class="facts">
+          <dt>Адрес</dt><dd class="with-act"><input class="field mono" data-bind="s.${s.id}.address" value="${esc(s.address)}" placeholder="IP или имя" aria-label="Адрес" spellcheck="false" autocapitalize="off">${ib('copy', 'Копировать адрес', 'data-act="copy-input"')}</dd>
+          <dt>Хостинг</dt><dd><input class="field" data-bind="s.${s.id}.provider" value="${esc(s.provider)}" placeholder="Где арендован, ссылка на панель" aria-label="Хостинг"></dd>
+          <dt>Доступ</dt><dd class="with-act">${shown ? `<textarea class="field mono auto" rows="2" data-bind="s.${s.id}.access" placeholder="Логин, пароль, SSH-ключ" aria-label="Доступ" spellcheck="false" autocapitalize="off">${esc(s.access)}</textarea>`
+            : `<span class="val masked" style="flex:1">${s.access ? '••••••••' : '<span class="none">не записан</span>'}</span>`}
+            ${ib(shown ? 'eyeOff' : 'eye', shown ? 'Скрыть' : 'Показать и изменить', `data-act="reveal" data-r="s:${s.id}"`)}${s.access ? ib('copy', 'Копировать доступ', `data-act="copy-access" data-s="${s.id}"`) : ''}</dd>
+          <dt>Заметка</dt><dd><textarea class="field auto" rows="1" data-bind="s.${s.id}.note" placeholder="Что важно помнить" aria-label="Заметка">${esc(s.note)}</textarea></dd>
+          <dt>Проекты</dt><dd style="padding:4px 8px">${used.length ? `<span class="chips">${used.map(p => `<a class="chip" href="#/p/${p.id}">${esc(p.name)}</a>`).join('')}</span>` : '<span class="none">ни к одному не привязан</span>'}</dd>
+        </dl>
+        <div class="danger-zone"><button class="btn danger quiet sm" type="button" data-act="del-server" data-s="${s.id}">${I('trash')}Удалить сервер</button></div>
+      </article>`;
+    }).join('') || '<p class="empty">Серверов пока нет.</p>'}
+    <p style="margin-top:18px"><button class="btn" type="button" data-act="add-server">${I('plus')}Добавить сервер</button></p>`;
+}
+function viewDomains() {
+  const rows = [];
+  for (const p of S.data.projects) for (const x of p.domains) if (x.name.trim()) rows.push({p, x});
+  rows.sort((a, b) => a.x.name.localeCompare(b.x.name));
+  return `<div class="view-head"><h1 class="h1">Домены</h1><p class="lede">Все домены по проектам. Добавляются и правятся на странице проекта.</p></div>
+    ${rows.length ? `<div class="table-wrap"><table class="ledger"><thead><tr><th>Домен</th><th>Проект</th><th class="col-srv">Сервер</th><th>Заметка</th></tr></thead><tbody>${rows.map(({p, x}) => `<tr>
+      <td>${safeHost(x.name) ? `<a href="https://${esc(x.name.trim())}" target="_blank" rel="noopener noreferrer"><strong>${esc(x.name)}</strong></a>` : `<strong>${esc(x.name)}</strong>`}</td>
+      <td><a href="#/p/${p.id}">${esc(p.name)}</a></td>
+      <td class="col-srv">${p.servers.map(srv).filter(Boolean).map(s => `<span class="mono">${esc(s.address || s.name)}</span>`).join('<br>') || '<span class="none">не указан</span>'}</td>
+      <td>${esc(x.note) || '<span class="none">нет</span>'}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Доменов пока нет.</p>'}`;
+}
+function viewDoc(p, x) {
+  const editing = S.editDoc === x.id, A = `data-p="${p.id}" data-doc="${x.id}"`;
+  return `<div class="crumbs">Проект <a href="#/p/${p.id}">${esc(p.name)}</a></div>
+    <div class="doc-head">
+      ${editing ? `<input class="title-input" data-bind="doc.${p.id}.${x.id}.name" value="${esc(x.name)}" aria-label="Название документа">` : `<h1 class="h1">${esc(x.name)}</h1>`}
+      <span class="env-actions">${editing ? `<button class="btn primary sm" type="button" data-act="done-doc" ${A}>Готово</button>`
+        : `${ib('edit', 'Изменить', `data-act="edit-doc" ${A}`)}${ib('copy', 'Копировать текст', `data-act="copy-doc" ${A}`)}${ib('download', 'Скачать файл', `data-act="dl-doc" ${A}`)}${ib('trash', 'Удалить документ', `data-act="del-doc" ${A}`)}`}</span>
+    </div>
+    <p class="doc-meta" style="margin:6px 0 0">${[x.path && x.path !== x.name ? esc(x.path) : '', fmtSize(byteLen(x.content)), x.updatedAt ? 'обновлён ' + fmtDay(x.updatedAt) : ''].filter(Boolean).join(', ')}</p>
+    ${editing ? `<textarea class="code-edit doc-edit" data-bind="doc.${p.id}.${x.id}.content" spellcheck="false" aria-label="Текст документа">${esc(x.content)}</textarea>`
+      : `<article class="md">${md(x.content) || '<p class="empty">Документ пустой. Нажмите «Изменить», чтобы написать текст.</p>'}</article>`}`;
+}
+function viewSearch(q) {
+  const ql = q.toLowerCase(), res = [];
+  const has = s => String(s || '').toLowerCase().includes(ql);
+  const deep = ql.length >= 4;
+  const snip = s => { s = String(s || ''); const i = s.toLowerCase().indexOf(ql); if (i < 0) return esc(s.slice(0, 120)); const a = Math.max(0, i - 50); return (a ? '…' : '') + esc(s.slice(a, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length, i + q.length + 70)) + '…'; };
+  for (const p of S.data.projects) {
+    if (has(p.name) || has(p.about) || has(p.folder) || has(p.repo) || has(p.stack)) res.push(['Проект', p.name, esc(p.about), `#/p/${p.id}`]);
+    for (const x of p.domains) if (has(x.name) || has(x.note)) res.push(['Домен', x.name, esc(p.name), `#/p/${p.id}`]);
+    for (const e of p.envs) for (const kv of parseEnv(e.content)) {
+      if (has(kv.k)) res.push(['Ключ в .env', kv.k, esc(`${p.name}, ${e.path || e.name}`), `#/p/${p.id}`]);
+      else if (deep && has(kv.v)) res.push(['Значение в .env', kv.k, esc(`${p.name}, ${e.path || e.name}`), `#/p/${p.id}`]);
+    }
+    for (const x of p.docs) if (has(x.name) || has(x.content)) res.push(['Документ', x.name, esc(p.name) + (has(x.content) ? ': ' + snip(x.content) : ''), `#/d/${p.id}/${x.id}`]);
+    if (has(p.notes)) res.push(['Заметка', p.name, snip(p.notes), `#/p/${p.id}`]);
+  }
+  for (const s of S.data.servers) {
+    if (has(s.name) || has(s.address) || has(s.provider) || has(s.note)) res.push(['Сервер', s.name || s.address, esc(s.address), '#/servers']);
+    else if (deep && has(s.access)) res.push(['Доступ к серверу', s.name || s.address, '', '#/servers']);
+  }
+  for (const k of S.data.secrets) {
+    if (has(k.title) || has(k.note)) res.push(['Ключ или пароль', k.title || 'Без названия', esc(k.note), '#/secrets']);
+    else if (deep && has(k.value)) res.push(['Значение ключа', k.title || 'Без названия', '', '#/secrets']);
+  }
+  return `<div class="view-head"><h1 class="h1">Поиск</h1><p class="lede">${res.length ? `По запросу «${esc(q)}» ${plural(res.length, 'нашёлся', 'нашлось', 'нашлось')} ${nw(res.length, 'результат', 'результата', 'результатов')}.` : `По запросу «${esc(q)}» ничего нет. Поиск идёт по названиям, доменам, ключам .env и тексту документов.`}</p></div>
+    ${res.length ? `<ul class="results">${res.slice(0, 200).map(([k, t, s, h]) => `<li><a href="${h}" data-act="go" data-href="${h}"><span class="kind">${k}</span><span class="t">${esc(t)}</span>${s ? `<span class="s">${s}</span>` : ''}</a></li>`).join('')}</ul>` : ''}`;
+}
+const safeHost = s => /^[a-z0-9.-]+(:\d+)?(\/\S*)?$/i.test(String(s).trim()) && String(s).includes('.');
+
+/* ===== диалоги ===== */
+function dialog(html, cls = '') {
+  const d = document.createElement('dialog'); d.className = 'dlg ' + cls; d.innerHTML = `<div class="dlg-in">${html}</div>`;
+  document.body.appendChild(d); d.addEventListener('close', () => d.remove()); d.showModal(); return d;
+}
+function closeDialogs() { $$('dialog.dlg').forEach(d => d.close()); hideMenu(); }
+function aboutDialog() {
+  const d = dialog(`<div class="dlg-head"><h2>Как устроен Сейф</h2></div>
+    <div class="dlg-body">
+      <p><strong>Где данные.</strong> В приватном репозитории ${esc(S.cfg.repo)}, одним файлом ${esc(S.cfg.path)}. Каждое сохранение — отдельный коммит, поэтому любую прошлую версию можно найти в истории репозитория.</p>
+      <p><strong>Шифрование.</strong> Данные шифруются прямо на устройстве: AES-256-GCM, ключ из мастер-пароля через PBKDF2-SHA256 с 600 000 повторами. GitHub видит только зашифрованный текст. Ключ доступа к GitHub тоже хранится на устройстве зашифрованным.</p>
+      <p><strong>Сохранение.</strong> Само, через пару секунд после правки. Если интернета нет, изменения ждут на устройстве и уходят, когда связь появится. Если на другом устройстве сохранили свою версию, Сейф спросит, какую оставить.</p>
+      <p><strong>Сеть.</strong> Страница обращается только к api.github.com, остальные адреса ей запрещены.</p>
+      <p><strong>Пароль.</strong> Нигде не хранится. Если его забыть, восстановить данные нельзя.</p>
+    </div>
+    <div class="dlg-foot"><button class="btn primary" type="button" data-dlg="close">Понятно</button></div>`);
+  d.addEventListener('click', e => { if (e.target.closest('[data-dlg="close"]')) d.close(); });
+}
+async function connectDialog() {
+  const t = await encTok(S.token);
+  const link = location.origin + location.pathname + '#connect=' + b64url(te.encode(JSON.stringify({r: S.cfg.repo, p: S.cfg.path, t})));
+  const canShare = typeof navigator.share === 'function';
+  const d = dialog(`<div class="dlg-head"><h2>Подключить телефон</h2><p>Отправьте эту ссылку себе, например в «Избранное» в Telegram, и откройте её на телефоне. Затем введите мастер-пароль.</p></div>
+    <div class="dlg-body">
+      <textarea class="link-box" readonly aria-label="Ссылка подключения">${esc(link)}</textarea>
+      <p style="margin-top:12px;color:var(--ink-2);font-size:14px">Ключ GitHub в ссылке зашифрован мастер-паролем, поэтому без пароля ссылка бесполезна. После подключения добавьте страницу на главный экран: в меню браузера пункт «Добавить на главный экран».</p>
+    </div>
+    <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Закрыть</button>${canShare ? '<button class="btn" type="button" data-dlg="share">Поделиться…</button>' : ''}<button class="btn primary" type="button" data-dlg="copy">Копировать ссылку</button></div>`);
+  d.addEventListener('click', async e => {
+    const b = e.target.closest('[data-dlg]'); if (!b) return;
+    if (b.dataset.dlg === 'close') return d.close();
+    if (b.dataset.dlg === 'copy') { await copy(link, 'Ссылка скопирована'); return; }
+    if (b.dataset.dlg === 'share') { try { await navigator.share({title: 'Сейф', url: link}); } catch {} }
+  });
+}
+function askPassword(title, text) {
+  return new Promise(res => {
+    const d = dialog(`<div class="dlg-head"><h2>${esc(title)}</h2><p>${esc(text)}</p></div>
+      <div class="dlg-body"><label class="fld">Пароль<input type="password" id="ap-pw" autocomplete="off"></label></div>
+      <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Отмена</button><button class="btn primary" type="button" data-dlg="ok">Продолжить</button></div>`);
+    let done = false;
+    d.addEventListener('click', e => { const b = e.target.closest('[data-dlg]'); if (!b) return; done = true; const v = $('#ap-pw', d).value; d.close(); res(b.dataset.dlg === 'ok' ? v : null); });
+    d.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); done = true; const v = $('#ap-pw', d).value; d.close(); res(v); } });
+    d.addEventListener('close', () => { if (!done) res(null); });
+    setTimeout(() => $('#ap-pw', d).focus(), 30);
+  });
+}
+function passDialog() {
+  const d = dialog(`<div class="dlg-head"><h2>Сменить мастер-пароль</h2><p>На других устройствах Сейф попросит ввести новый пароль.</p></div>
+    <div class="dlg-body">
+      <label class="fld">Текущий пароль<input type="password" id="cp-old" autocomplete="current-password"></label>
+      <label class="fld">Новый пароль<input type="password" id="cp-new" autocomplete="new-password"></label>
+      <label class="fld">Новый пароль ещё раз<input type="password" id="cp-new2" autocomplete="new-password"></label>
+      <p class="dlg-err" id="cp-err" aria-live="polite"></p>
+    </div>
+    <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Отмена</button><button class="btn primary" type="button" data-dlg="ok">Сменить пароль</button></div>`);
+  const err = m => { $('#cp-err', d).textContent = m; };
+  d.addEventListener('click', async e => {
+    const b = e.target.closest('[data-dlg]'); if (!b) return;
+    if (b.dataset.dlg === 'close') return d.close();
+    const o = $('#cp-old', d).value, n = $('#cp-new', d).value, n2 = $('#cp-new2', d).value;
+    if (n.length < 8) return err('Нужно хотя бы 8 символов.');
+    if (n !== n2) return err('Новые пароли не совпадают.');
+    b.disabled = true; b.textContent = 'Проверяю…';
+    if (!(await passMatches(o))) { b.disabled = false; b.textContent = 'Сменить пароль'; return err('Текущий пароль не подошёл.'); }
+    S.salt = crypto.getRandomValues(new Uint8Array(16)); S.iter = ITER;
+    S.key = await deriveKey(n, S.salt, ITER); await makeCheck();
+    S.cfg.tok = await encTok(S.token); ls.set(CFG_KEY, S.cfg);
+    d.close(); touch(); toast('Пароль изменён', 4000);
+  });
+  setTimeout(() => $('#cp-old', d).focus(), 30);
+}
+function histDialog(p, e) {
+  const d = dialog(`<div class="dlg-head"><h2>Прошлые версии ${esc(e.name)}</h2><p>Хранятся пять последних версий: при повторной загрузке и при правке.</p></div>
+    <div class="dlg-body"><ul class="hist">${e.history.map((h, i) => `<li><div style="flex:1;min-width:0"><div>${esc(fmtTime(h.at))}, ${nw(parseEnv(h.content).length, 'ключ', 'ключа', 'ключей')}</div><pre hidden id="hv-${i}">${esc(h.content)}</pre></div>
+      <span style="display:flex;gap:4px;align-self:flex-start"><button class="btn sm" type="button" data-dlg="show" data-i="${i}">Показать</button><button class="btn sm" type="button" data-dlg="restore" data-i="${i}">Вернуть</button></span></li>`).join('')}</ul></div>
+    <div class="dlg-foot"><button class="btn primary" type="button" data-dlg="close">Закрыть</button></div>`);
+  d.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-dlg]'); if (!b) return;
+    const i = +b.dataset.i;
+    if (b.dataset.dlg === 'close') return d.close();
+    if (b.dataset.dlg === 'show') { const pre = $('#hv-' + i, d); pre.hidden = !pre.hidden; b.textContent = pre.hidden ? 'Показать' : 'Скрыть'; return; }
+    if (b.dataset.dlg === 'restore') {
+      const old = e.history[i]; e.history.splice(i, 1);
+      e.history.unshift({content: e.content, at: e.updatedAt || nowIso()}); e.history.length = Math.min(e.history.length, 5);
+      e.content = old.content; e.updatedAt = nowIso(); touch(); d.close(); renderMain(true); toast('Версия возвращена');
+    }
+  });
+}
+function conflictDialog() {
+  if ($('dialog.conflict')) return;
+  const d = dialog(`<div class="dlg-head"><h2>Сейф изменили на другом устройстве</h2><p>Пока вы правили здесь, на другом устройстве сохранили свою версию. Выберите, какую оставить.</p></div>
+    <div class="dlg-body"><p>«Взять ту версию» заменит то, что вы видите сейчас. Ваши правки при этом скачаются файлом, чтобы ничего не потерялось.</p><p class="dlg-err" id="cf-err"></p></div>
+    <div class="dlg-foot"><button class="btn" type="button" data-dlg="theirs">Взять ту версию</button><button class="btn primary" type="button" data-dlg="mine">Оставить мою</button></div>`, 'conflict');
+  d.addEventListener('cancel', e => e.preventDefault());
+  d.addEventListener('click', async e => {
+    const b = e.target.closest('[data-dlg]'); if (!b) return;
+    $$('button', d).forEach(x => x.disabled = true);
+    try {
+      const r = await ghLoad();
+      if (b.dataset.dlg === 'mine') { S.sha = r.sha; d.close(); await save(); return; }
+      download(JSON.stringify(await seal(S.data)), `Сейф-мои-правки-${stamp()}.json`);
+      ls.del(PENDING_KEY); ls.set(CACHE_KEY, r);
+      if (!r.env) { S.sha = null; d.close(); return; }
+      if (r.env.kdf.salt !== b64(S.salt)) { S.dirty = false; d.close(); S.remote = r; await lock('Мастер-пароль сменили на другом устройстве. Введите новый пароль.', true); return; }
+      S.data = normalize(await openWithKey(r.env, S.key)); S.sha = r.sha; S.dirty = false; S.ver++;
+      d.close(); renderSide(); renderMain(); renderStatus(); toast('Открыта версия с другого устройства. Ваши правки скачаны файлом.', 5000);
+    } catch (err) { $$('button', d).forEach(x => x.disabled = false); $('#cf-err', d).textContent = ghMessage(err); }
+  });
+}
+
+/* ===== загрузка из папки и файлов ===== */
+const SKIP = new Set(['node_modules', 'Library', 'Temp', 'Logs', 'obj', 'bin', 'Builds', 'Build', 'Assets', 'Packages', 'ProjectSettings', 'UserSettings', 'venv', '__pycache__', 'dist', 'build', 'coverage', 'RawModels', 'intro', 'vendor', 'storage', 'target', 'out']);
+const isEnvName = n => n === '.env' || /^\.env\./i.test(n) || /\.env$/i.test(n);
+const isExample = n => /(example|sample|template|dist)/i.test(n);
+async function walk(dir, prefix, depth, out) {
+  for await (const [name, h] of dir.entries()) {
+    const path = prefix ? prefix + '/' + name : name;
+    if (h.kind === 'directory') { if (depth < 4 && !SKIP.has(name) && !name.startsWith('.')) await walk(h, path, depth + 1, out); continue; }
+    const env = isEnvName(name), doc = /\.md$/i.test(name);
+    if (!env && !doc) continue;
+    const f = await h.getFile(); if (f.size > 2 * 1024 * 1024) continue;
+    out.push({kind: env ? 'env' : 'doc', name, path, size: f.size, text: await f.text(), example: env && isExample(name)});
+  }
+}
+async function importFolder() {
+  if (!HAS_DIR) { toast('Этот браузер не умеет открывать папки. Добавьте файлы на странице проекта.', 5000); return; }
+  let root;
+  try { root = await showDirectoryPicker({id: 'seyf-import', mode: 'read'}); }
+  catch (e) { if (!e || e.name !== 'AbortError') toast('Папку открыть не удалось: ' + (e && e.message || e)); return; }
+  toast('Ищу файлы .env и документы…', 20000);
+  try {
+    const top = []; for await (const [n, h] of root.entries()) top.push([n, h]);
+    const markers = ['.git', 'docker-compose.yml', 'README.md', 'package.json', 'Dockerfile', 'pyproject.toml', 'requirements.txt', 'Assets', 'ProjectSettings'];
+    const single = top.some(([n]) => markers.includes(n));
+    const groups = single ? [{folder: root.name, dir: root, items: []}]
+      : top.filter(([n, h]) => h.kind === 'directory' && !SKIP.has(n) && !n.startsWith('.')).map(([n, h]) => ({folder: n, dir: h, items: []}));
+    for (const g of groups) await walk(g.dir, '', 0, g.items);
+    const found = groups.filter(g => g.items.length);
+    if (found.length) { $('#toast').classList.remove('on'); importDialog(found, root.name); }
+    else toast('В этой папке нет файлов .env и документов .md', 4000);
+  } catch (e) { toast('Не удалось прочитать папку: ' + (e && e.message || e), 6000); }
+}
+function matchProject(folder) {
+  const n = folder.toLowerCase();
+  return S.data.projects.find(p => (p.folder || '').split(/[\\/]/).filter(Boolean).pop()?.toLowerCase() === n) || S.data.projects.find(p => (p.name || '').toLowerCase() === n);
+}
+function importDialog(groups, rootName) {
+  let envN = 0, docN = 0;
+  groups.forEach(g => {
+    g.items.sort((a, b) => a.kind === b.kind ? a.path.localeCompare(b.path) : a.kind === 'env' ? -1 : 1);
+    const p = matchProject(g.folder); g.pid = p ? p.id : '__new';
+    g.items.forEach(it => {
+      if (it.kind === 'env') envN++; else docN++;
+      const ex = p && (it.kind === 'env' ? p.envs : p.docs).find(x => x.path === it.path);
+      it.state = !ex ? 'new' : ex.content === it.text ? 'same' : 'upd';
+      it.checked = it.state !== 'same' && !(it.kind === 'env' && it.example) && !(it.kind === 'doc' && it.size > 300 * 1024);
+    });
+  });
+  const opts = g => S.data.projects.map(p => `<option value="${p.id}"${p.id === g.pid ? ' selected' : ''}>${esc(p.name)}</option>`).join('') + `<option value="__new"${g.pid === '__new' ? ' selected' : ''}>Новый проект «${esc(g.folder)}»</option><option value="__skip">Не загружать</option>`;
+  const tag = it => it.state === 'same' ? '<span class="tag">без изменений</span>' : it.state === 'upd' ? '<span class="tag upd">обновится</span>' : it.example ? '<span class="tag">пример</span>' : '<span class="tag new">новый</span>';
+  const d = dialog(`<div class="dlg-head"><h2>Загрузка из папки «${esc(rootName)}»</h2>
+      <p>Нашлось ${nw(envN, 'файл', 'файла', 'файлов')} .env и ${nw(docN, 'документ', 'документа', 'документов')}. Отметьте, что загрузить. Примеры .env и большие документы по умолчанию не отмечены.</p></div>
+    <div class="dlg-body">${groups.map((g, gi) => `<fieldset class="imp-group"><legend><span class="mono" style="color:var(--ink)">${esc(g.folder)}</span><span>в проект</span><select data-g="${gi}" aria-label="Проект для ${esc(g.folder)}">${opts(g)}</select></legend>
+      ${g.items.map((it, ii) => `<label class="imp-item"><input type="checkbox" data-g="${gi}" data-i="${ii}"${it.checked ? ' checked' : ''}><span class="k">${it.kind === 'env' ? '.env' : 'текст'}</span><span class="p" title="${esc(it.path)}">${esc(it.path)}</span>${tag(it)}<span class="tag size">${fmtSize(it.size)}</span></label>`).join('')}</fieldset>`).join('')}</div>
+    <div class="dlg-foot"><button class="btn quiet" type="button" data-dlg="close">Отмена</button><button class="btn primary" type="button" data-dlg="ok">Загрузить отмеченное</button></div>`, 'wide');
+  d.addEventListener('change', e => {
+    const t = e.target;
+    if (t.tagName === 'SELECT') groups[+t.dataset.g].pid = t.value;
+    if (t.type === 'checkbox') groups[+t.dataset.g].items[+t.dataset.i].checked = t.checked;
+  });
+  d.addEventListener('click', e => {
+    const b = e.target.closest('[data-dlg]'); if (!b) return;
+    if (b.dataset.dlg === 'close') return d.close();
+    let added = 0, updated = 0, newP = 0;
+    for (const g of groups) {
+      if (g.pid === '__skip') continue;
+      const chosen = g.items.filter(it => it.checked); if (!chosen.length) continue;
+      let p = proj(g.pid);
+      if (!p) { p = normalize({projects: [{name: g.folder}]}).projects[0]; S.data.projects.push(p); g.pid = p.id; newP++; }
+      for (const it of chosen) {
+        const r = it.kind === 'env' ? upsertEnv(p, it.name, it.path, it.text, it.example) : upsertDoc(p, it.name, it.path, it.text);
+        if (r === 'added') added++; else if (r === 'updated') updated++;
+      }
+    }
+    d.close();
+    if (added || updated || newP) { touch(); renderSide(); renderMain(true); }
+    toast(added || updated ? `Загружено: ${added} ${plural(added, 'новый файл', 'новых файла', 'новых файлов')}, обновлено ${updated}` : 'Ничего не загружено', 4500);
+  });
+}
+async function addFiles(pid, files) {
+  const p = proj(pid); if (!p || !files.length) return;
+  let ne = 0, nd = 0;
+  for (const f of files) {
+    if (f.size > 2 * 1024 * 1024) { toast(`${f.name}: больше 2 МБ, пропущен`); continue; }
+    const text = await f.text();
+    if (/\.(md|markdown|txt)$/i.test(f.name)) { upsertDoc(p, f.name, f.name, text); nd++; }
+    else { upsertEnv(p, f.name, f.name, text, isExample(f.name)); ne++; }
+  }
+  touch(); renderSide(); renderMain(true);
+  toast(`Добавлено: ${nw(ne, 'файл', 'файла', 'файлов')} .env, ${nw(nd, 'документ', 'документа', 'документов')}`);
+}
+async function restoreFromFile() {
+  const f = await pickFile('.json,.html,.htm,application/json,text/html'); if (!f) return;
+  const env = envelopeFromText(await f.text());
+  if (!env) { toast('В этом файле нет данных Сейфа.', 4500); return; }
+  let data;
+  if (!env.ct) data = env.seed || {};
+  else if (env.kdf.salt === b64(S.salt)) { try { data = await openWithKey(env, S.key); } catch {} }
+  if (!data && env.ct) {
+    const pw = await askPassword('Пароль от копии', `Файл ${f.name} зашифрован. Введите пароль, с которым он был сохранён.`);
+    if (pw === null) return;
+    try { data = await openWithKey(env, await envKey(env, pw)); } catch { toast('Пароль не подошёл к этой копии.', 4500); return; }
+  }
+  if (!confirm(`Заменить всё содержимое сейфа данными из ${f.name}? Текущая версия останется в истории репозитория.`)) return;
+  S.data = normalize(data); touch(); go('#/'); renderSide(); toast('Данные восстановлены из копии', 4000);
+}
+
+/* ===== меню и боковая панель ===== */
+function hideMenu() { const m = $('#menu'); if (m && !m.hidden) { m.hidden = true; $('#menu-btn')?.setAttribute('aria-expanded', 'false'); } }
+function toggleMenu() { const m = $('#menu'); if (!m) return; m.hidden = !m.hidden; $('#menu-btn').setAttribute('aria-expanded', String(!m.hidden)); if (!m.hidden) $('#autolock').value = String(S.data.settings.autolock); }
+function closeSide() { $('#shell')?.classList.remove('side-open'); }
+
+/* ===== действия ===== */
+async function act(t) {
+  const a = t.dataset.act, {p: pid, e: eid, i, l, k: kid, s: sid, r: rid} = t.dataset;
+  const p = pid && S.data ? proj(pid) : null;
+  switch (a) {
+    case 'go': go(t.dataset.href); break;
+    case 'save': hideMenu(); if (!S.dirty) toast('Всё уже сохранено'); else { S.saveErr = ''; S.offline = false; await save(); } break;
+    case 'backup': hideMenu(); download(JSON.stringify(await seal(S.data)), `Сейф-копия-${stamp()}.json`); toast('Копия скачана. Открыть её можно этим же паролем.'); break;
+    case 'restore': hideMenu(); await restoreFromFile(); break;
+    case 'lock': await lock(); break;
+    case 'menu': toggleMenu(); break;
+    case 'about': hideMenu(); aboutDialog(); break;
+    case 'connect': hideMenu(); closeSide(); await connectDialog(); break;
+    case 'change-pass': hideMenu(); passDialog(); break;
+    case 'forget':
+      hideMenu();
+      if (!confirm('Отключить это устройство? Данные останутся в GitHub, но здесь сейф придётся подключать заново.' + (S.dirty ? ' Несохранённые изменения пропадут.' : ''))) return;
+      [CFG_KEY, CACHE_KEY, PENDING_KEY].forEach(ls.del);
+      S.data = null; S.key = null; S.token = null; S.cfg = null; S.dirty = false; location.hash = '';
+      showSetup('Устройство отключено. Чтобы снова открыть сейф, подключите его.');
+      break;
+    case 'reconnect': S.cfg = S.cfg ? {repo: S.cfg.repo, path: S.cfg.path} : null; showSetup(); break;
+    case 'pick-import': {
+      const f = await pickFile('.html,.htm,.json,text/html,application/json'); if (!f) return;
+      const env = envelopeFromText(await f.text());
+      if (!env) { lockFail('В этом файле нет данных Сейфа.'); return; }
+      env._name = f.name; S.importEnv = env;
+      $('#imp-name').textContent = f.name + (env.ct ? ' (зашифрован: введите его пароль)' : '');
+      t.textContent = 'Другой файл';
+      break;
+    }
+    case 'import': closeSide(); await importFolder(); break;
+    case 'toggle-side': $('#shell').classList.toggle('side-open'); break;
+    case 'close-side': closeSide(); break;
+    case 'add-project': {
+      const np = normalize({projects: [{name: 'Новый проект'}]}).projects[0];
+      S.data.projects.push(np); touch(); go(`#/p/${np.id}`);
+      setTimeout(() => { const el = $(`[data-bind="p.${np.id}.name"]`); if (el) { el.focus(); el.select(); } }, 30);
+      break;
+    }
+    case 'del-project':
+      if (!confirm(`Удалить проект «${p.name}» вместе с его файлами .env и документами? Прошлая версия останется в истории репозитория.`)) return;
+      S.data.projects = S.data.projects.filter(x => x !== p);
+      S.data.secrets.forEach(k => { if (k.project === p.id) k.project = ''; });
+      touch(); go('#/');
+      break;
+    case 'copy-input': { const inp = t.closest('.with-act').querySelector('input,textarea'); if (inp && inp.value) copy(inp.value); break; }
+    case 'open-input': { const v = t.closest('.with-act').querySelector('input').value.trim(); if (/^https?:\/\//i.test(v)) window.open(v, '_blank', 'noopener,noreferrer'); else toast('Здесь нет ссылки, которая начинается с https://'); break; }
+    case 'add-domain': p.domains.push({name: '', note: ''}); touch(); renderMain(true); $(`[data-bind="pd.${p.id}.${p.domains.length - 1}.name"]`)?.focus(); break;
+    case 'del-domain': p.domains.splice(+i, 1); touch(); renderSide(); renderMain(true); break;
+    case 'open-domain': { const n = (p.domains[+i]?.name || '').trim(); if (safeHost(n)) window.open('https://' + n, '_blank', 'noopener,noreferrer'); else toast('Сначала впишите домен'); break; }
+    case 'unlink-server': p.servers = p.servers.filter(x => x !== sid); touch(); renderMain(true); break;
+    case 'reveal': S.reveal.has(rid) ? S.reveal.delete(rid) : S.reveal.add(rid); renderMain(true); break;
+    case 'reveal-all': {
+      const e = envOf(pid, eid), ids = parseEnv(e.content).map(x => `e:${e.id}:${x.line}`), all = ids.every(x => S.reveal.has(x));
+      ids.forEach(x => all ? S.reveal.delete(x) : S.reveal.add(x)); renderMain(true); break;
+    }
+    case 'copy-val': { const e = envOf(pid, eid), x = parseEnv(e.content).find(z => z.line === +l); if (x) copy(x.v, `Скопировано значение ${x.k}`); break; }
+    case 'copy-env': copy(envOf(pid, eid).content, 'Файл скопирован целиком'); break;
+    case 'dl-env': { const e = envOf(pid, eid); download(e.content, e.name || '.env', 'text/plain'); break; }
+    case 'edit-env': S.editEnv.add(eid); S.envSnap[eid] = envOf(pid, eid).content; renderMain(true); $(`[data-bind="e.${pid}.${eid}.content"]`)?.focus(); break;
+    case 'done-env': {
+      const e = envOf(pid, eid); S.editEnv.delete(eid);
+      const before = S.envSnap[eid]; delete S.envSnap[eid];
+      if (before !== undefined && before !== e.content) { if (before.trim()) { e.history.unshift({content: before, at: e.updatedAt || nowIso()}); e.history.length = Math.min(e.history.length, 5); } e.updatedAt = nowIso(); touch(); }
+      renderMain(true); break;
+    }
+    case 'hist-env': histDialog(p, envOf(pid, eid)); break;
+    case 'del-env': { const e = envOf(pid, eid); if (!confirm(`Удалить ${e.path || e.name} из сейфа?`)) return; p.envs = p.envs.filter(x => x !== e); touch(); renderSide(); renderMain(true); break; }
+    case 'paste-env': { const e = {id: uid(), name: '.env', path: '', content: '', updatedAt: nowIso(), history: []}; p.envs.push(e); S.editEnv.add(e.id); S.envSnap[e.id] = ''; touch(); renderSide(); renderMain(true); $(`[data-bind="e.${p.id}.${e.id}.content"]`)?.focus(); break; }
+    case 'add-files': { const inp = $('#file-in'); inp.dataset.p = pid; inp.value = ''; inp.click(); break; }
+    case 'new-doc': { const x = {id: uid(), name: 'Заметка.md', path: '', content: '', updatedAt: nowIso()}; p.docs.push(x); S.editDoc = x.id; touch(); go(`#/d/${p.id}/${x.id}`); break; }
+    case 'edit-doc': S.editDoc = t.dataset.doc; renderMain(); $('.doc-edit')?.focus(); break;
+    case 'done-doc': { const x = docOf(pid, t.dataset.doc); if (x) x.updatedAt = nowIso(); S.editDoc = null; renderMain(); break; }
+    case 'copy-doc': copy(docOf(pid, t.dataset.doc).content, 'Текст документа скопирован'); break;
+    case 'dl-doc': { const x = docOf(pid, t.dataset.doc); download(x.content, x.name || 'Документ.md', 'text/markdown'); break; }
+    case 'del-doc': { const x = docOf(pid, t.dataset.doc); if (!confirm(`Удалить документ «${x.name}»?`)) return; p.docs = p.docs.filter(z => z !== x); touch(); go(`#/p/${p.id}`); break; }
+    case 'add-server': { const s = normalize({servers: [{name: 'Новый сервер'}]}).servers[0]; S.data.servers.push(s); touch(); renderSide(); renderMain(true); const el = $(`[data-bind="s.${s.id}.name"]`); if (el) { el.focus(); el.select(); } break; }
+    case 'del-server': { const s = srv(sid); if (!confirm(`Удалить сервер «${s.name || s.address}»? Из проектов он тоже отвяжется.`)) return; S.data.servers = S.data.servers.filter(x => x !== s); S.data.projects.forEach(x => { x.servers = x.servers.filter(y => y !== sid); }); touch(); renderSide(); renderMain(true); break; }
+    case 'copy-access': copy(srv(sid).access, 'Доступ скопирован'); break;
+    case 'add-secret': { const k = normalize({secrets: [{}]}).secrets[0]; S.data.secrets.push(k); S.reveal.add('k:' + k.id); touch(); renderSide(); renderMain(true); $(`[data-bind="k.${k.id}.title"]`)?.focus(); break; }
+    case 'del-secret': { const k = sec(kid); if ((k.title || k.value) && !confirm(`Удалить запись «${k.title || 'без названия'}»?`)) return; S.data.secrets = S.data.secrets.filter(x => x !== k); touch(); renderSide(); renderMain(true); break; }
+    case 'copy-secret': copy(sec(kid).value, 'Значение скопировано'); break;
+  }
+}
+function bindSet(key, val) {
+  const [t, a, b, c] = key.split('.');
+  if (t === 'p') { const p = proj(a); if (p) p[b] = val; }
+  else if (t === 'pd') { const p = proj(a); if (p && p.domains[+b]) p.domains[+b][c] = val; }
+  else if (t === 's') { const s = srv(a); if (s) s[b] = val; }
+  else if (t === 'k') { const s = sec(a); if (s) s[b] = val; }
+  else if (t === 'e') { const e = envOf(a, b); if (e) e[c] = val; }
+  else if (t === 'doc') { const x = docOf(a, b); if (x) x[c] = val; }
+  touch();
+}
+
+/* ===== события ===== */
+document.addEventListener('click', ev => {
+  if (!ev.target.closest('.more')) hideMenu();
+  if (ev.target.closest('dialog')) return;
+  const t = ev.target.closest('[data-act]'); if (!t) return;
+  if (t.tagName === 'A') ev.preventDefault();
+  act(t).catch(e => toast('Ошибка: ' + (e && e.message || e), 6000));
+});
+document.addEventListener('keydown', ev => {
+  S.lastAct = Date.now();
+  const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName);
+  if ((ev.ctrlKey || ev.metaKey) && (ev.code === 'KeyS' || String(ev.key || '').toLowerCase() === 's')) { ev.preventDefault(); if (S.data) { S.saveErr = ''; save(); } return; }
+  if (S.data && ((ev.key === '/' && !inField) || ((ev.ctrlKey || ev.metaKey) && ev.code === 'KeyK'))) { ev.preventDefault(); $('#q')?.focus(); return; }
+  if (ev.key === 'Escape') { hideMenu(); closeSide(); if (ev.target.id === 'q' && ev.target.value) { ev.target.value = ''; S.query = ''; renderMain(); } }
+  if (ev.key === 'Enter' && !inField && ev.target.matches('tr[data-act]')) act(ev.target);
+  if (ev.target.id === 'pw' || ev.target.id === 'pw2') {
+    const h = $('#lock-hint');
+    if (h && ev.getModifierState && ev.getModifierState('CapsLock')) { h.textContent = 'Включён Caps Lock.'; h.className = 'lock-hint ok'; }
+    else if (h && h.textContent === 'Включён Caps Lock.') h.textContent = '';
+  }
+});
+document.addEventListener('submit', ev => {
+  ev.preventDefault();
+  if (ev.target.id === 'lock-form') onLockSubmit();
+  if (ev.target.id === 'setup-form') onSetupSubmit();
+});
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.id === 'pw' || t.id === 'pw2' || t.id === 'tok') { spinDial(); return; }
+  if (t.closest('dialog')) return;
+  if (t.id === 'q') { S.query = t.value; renderMain(); return; }
+  if (t.dataset.bind && t.tagName !== 'SELECT') {
+    bindSet(t.dataset.bind, t.value);
+    if (t.classList.contains('auto')) autosize(t);
+    if (/^p\.[^.]+\.name$/.test(t.dataset.bind) || /^pd\..+\.name$/.test(t.dataset.bind)) renderSide();
+  }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.closest('dialog')) return;
+  if (t.dataset.bind && t.tagName === 'SELECT') { bindSet(t.dataset.bind, t.value); renderMain(true); return; }
+  if (t.dataset.change === 'link-server' && t.value) { const p = proj(t.dataset.p); p.servers.push(t.value); touch(); renderMain(true); renderSide(); return; }
+  if (t.dataset.change === 'autolock') { S.data.settings.autolock = +t.value; touch(); toast(+t.value ? `Сейф будет запираться через ${t.selectedOptions[0].textContent} без действий` : 'Автоматически сейф запираться не будет'); return; }
+  if (t.id === 'file-in') addFiles(t.dataset.p, [...t.files]);
+});
+['pointerdown', 'wheel', 'pointermove', 'touchstart'].forEach(n => document.addEventListener(n, () => { S.lastAct = Date.now(); }, {passive: true}));
+document.addEventListener('dragover', ev => { if (S.data && route().a === 'p' && ev.dataTransfer?.types?.includes('Files')) { ev.preventDefault(); $('#main')?.classList.add('drag'); } });
+document.addEventListener('dragleave', ev => { if (!ev.relatedTarget) $('#main')?.classList.remove('drag'); });
+document.addEventListener('drop', ev => {
+  if (!S.data) return; ev.preventDefault(); $('#main')?.classList.remove('drag');
+  const r = route(); if (r.a !== 'p' || !proj(r.b)) { toast('Перетаскивайте файлы на страницу проекта'); return; }
+  addFiles(r.b, [...(ev.dataTransfer?.files || [])]);
+});
+window.addEventListener('hashchange', () => {
+  if (!S.data) return;
+  S.query = ''; const q = $('#q'); if (q) q.value = '';
+  if (route().a !== 'd') S.editDoc = null;
+  closeSide(); renderSide(); renderMain(); scrollTo(0, 0);
+});
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => $$('#main textarea.auto').forEach(autosize), 120); });
+document.addEventListener('visibilitychange', () => {
+  if (!S.data) return;
+  if (document.visibilityState === 'hidden') { if (S.dirty) { stash(); save(); } }
+  else syncRemote();
+});
+window.addEventListener('online', () => { if (S.data && S.dirty) { S.offline = false; save(); } });
+window.addEventListener('beforeunload', ev => { if (S.data && S.dirty) { ev.preventDefault(); ev.returnValue = ''; } });
+setInterval(() => {
+  if (!S.data) return;
+  const min = +S.data.settings.autolock;
+  if (min > 0 && Date.now() - S.lastAct > min * 60000) { lock(`Сейф заперт: ${min} мин без действий.`); return; }
+  if (S.dirty && S.offline && !S.saving) save();
+  else if (!S.dirty && document.visibilityState === 'visible' && Date.now() - S.lastSync > 60000) syncRemote();
+}, 15000);
+
+/* ===== старт ===== */
+(function start() {
+  if (location.hash.startsWith('#connect=')) {
+    try {
+      const c = JSON.parse(td.decode(unb64url(location.hash.slice(9))));
+      if (c && c.r && c.t && c.t.ct) {
+        const old = ls.get(CFG_KEY);
+        if (!old || old.repo !== c.r) [CACHE_KEY, PENDING_KEY].forEach(ls.del);
+        S.cfg = {repo: c.r, path: c.p || VAULT_PATH, tok: c.t}; ls.set(CFG_KEY, S.cfg);
+      }
+    } catch {}
+    history.replaceState(null, '', location.pathname + location.search);
+    if (S.cfg) showLock('open', 'Устройство подключено к сейфу. Введите мастер-пароль.');
+    else showSetup('Ссылка подключения повреждена. Скопируйте её ещё раз целиком или подключитесь ключом.');
+  } else {
+    S.cfg = ls.get(CFG_KEY);
+    if (S.cfg && S.cfg.repo && S.cfg.tok) showLock('open'); else { S.cfg = null; showSetup(); }
+  }
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+})();
+</script>
+</body>
+</html>
